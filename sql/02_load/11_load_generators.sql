@@ -27,7 +27,7 @@ CREATE TABLE stg.generator_capacity (
 );
 GO
 
-DECLARE @repo NVARCHAR(400) = N'C:\projects\ercot-siting-screen';   -- <<< EDIT ME
+DECLARE @repo NVARCHAR(400) = N'D:\sql\ercot-siting-screen';   -- <<< EDIT ME
 
 EXEC('BULK INSERT stg.generator_capacity
       FROM ''' + @repo + '\data\processed\fact_generator_capacity.csv''
@@ -43,7 +43,7 @@ INSERT INTO fact.generator_capacity (
     operating_year, planned_retire_year, latitude, longitude)
 SELECT
     TRY_CAST(data_vintage_year   AS SMALLINT),
-    TRY_CAST(plant_code          AS INT),
+        TRY_CAST(TRY_CAST(plant_code AS DECIMAL(18,2)) AS INT),
     generator_id,
     plant_name,
     county_fips,
@@ -56,7 +56,7 @@ SELECT
     TRY_CAST(latitude            AS DECIMAL(9,6)),
     TRY_CAST(longitude           AS DECIMAL(9,6))
 FROM stg.generator_capacity
-WHERE TRY_CAST(plant_code AS INT) IS NOT NULL;
+WHERE TRY_CAST(TRY_CAST(plant_code AS DECIMAL(18,2)) AS INT) IS NOT NULL;5
 GO
 
 SELECT status_group, COUNT(*) AS generators, SUM(nameplate_mw) AS total_mw
