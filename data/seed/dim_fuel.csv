@@ -1,0 +1,27 @@
+technology,fuel_category,is_renewable,is_dispatchable
+Conventional Steam Coal,Coal,0,1
+Coal Integrated Gasification Combined Cycle,Coal,0,1
+Petroleum Coke,Coal,0,1
+Natural Gas Fired Combined Cycle,Gas,0,1
+Natural Gas Fired Combustion Turbine,Gas,0,1
+Natural Gas Steam Turbine,Gas,0,1
+Natural Gas Internal Combustion Engine,Gas,0,1
+Other Natural Gas,Gas,0,1
+Other Gases,Gas,0,1
+Petroleum Liquids,Oil,0,1
+Nuclear,Nuclear,0,1
+Onshore Wind Turbine,Wind,1,0
+Offshore Wind Turbine,Wind,1,0
+Solar Photovoltaic,Solar,1,0
+Solar Thermal with Energy Storage,Solar,1,1
+Solar Thermal without Energy Storage,Solar,1,0
+Batteries,Storage,0,1
+Flywheels,Storage,0,1
+Hydroelectric Pumped Storage,Storage,0,1
+Conventional Hydroelectric,Hydro,1,1
+Geothermal,Geothermal,1,1
+Landfill Gas,Biomass,1,1
+Municipal Solid Waste,Biomass,1,1
+Wood/Wood Waste Biomass,Biomass,1,1
+Other Waste Biomass,Biomass,1,1
+All Other,Other,0,0

@@ -1,0 +1,21 @@
+# Raw source data - large, and re-downloadable. Never commit.
+data/raw/*
+!data/raw/.gitkeep
+
+# Script output - derived, regenerable from data/raw + scripts/
+data/processed/*
+!data/processed/.gitkeep
+
+# Power BI scratch
+*.pbix.tmp
+powerbi/*.pbix.bak
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# OS
+.DS_Store
+Thumbs.db
