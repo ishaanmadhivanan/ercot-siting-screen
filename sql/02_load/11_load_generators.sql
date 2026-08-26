@@ -51,11 +51,11 @@ SELECT
     NULLIF(status_code, ''),
     status_group,
     TRY_CAST(nameplate_mw        AS DECIMAL(12,2)),
-    TRY_CAST(operating_year      AS SMALLINT),
-    TRY_CAST(planned_retire_year AS SMALLINT),
+      TRY_CAST(TRY_CAST(operating_year AS DECIMAL(18,2)) AS SMALLINT),
+    TRY_CAST(TRY_CAST(planned_retire_year AS DECIMAL(18,2)) AS SMALLINT),
     TRY_CAST(latitude            AS DECIMAL(9,6)),
     TRY_CAST(longitude           AS DECIMAL(9,6))
-FROM stg.generator_capacity
+FROM stg.generator_capacit5y
 WHERE TRY_CAST(TRY_CAST(plant_code AS DECIMAL(18,2)) AS INT) IS NOT NULL;5
 GO
 
