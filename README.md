@@ -27,24 +27,10 @@ Stated plainly because a screening model whose limits are undocumented is worse 
 
 ## Data sources
 
-All free, all public.
-
 - **EIA Form 860** — generator-level inventory: plant, county, coordinates, nameplate capacity, technology, status, planned retirement year. The backbone.
 - **EIA Form 923** *(Stage 2)* — monthly generation and fuel consumption. The volume that makes this a database rather than a spreadsheet.
 - **ERCOT GIS Report** *(Stage 3)* — the monthly generator interconnection queue: proposed projects by county, capacity, fuel, and study status. Requires free registration on the ERCOT Public Portal.
 - **US Census** *(Stage 1b)* — county population, land area, and TIGER boundaries.
-
----
-
-## Design decisions worth knowing before you read the SQL
-
-**Counties join on FIPS, never on name.** EIA writes `De Witt`, Census writes `DeWitt`. Texas has 254 counties, so a handful of silent join failures is invisible to the eye and fatal to the result. Every source is mapped through a normalised `match_key` into `dim.county`, and `sql/04_checks/90_check_fips_coverage.sql` fails loudly when something does not resolve.
-
-**Weights are data, not code.** `dim.score_weight` holds them. The scoring view reads whatever is in that table, which is why the Power BI what-if sliders bind to it without any change to the SQL.
-
-**Factors are stored tall, not wide.** `rpt.county_factor` emits one row per county per factor. Adding a factor is one `UNION ALL` block plus one `INSERT` — the normalisation and scoring views never change.
-
-**Power BI reads only from `rpt`.** No report object touches `dim` or `fact` directly.
 
 ---
 
