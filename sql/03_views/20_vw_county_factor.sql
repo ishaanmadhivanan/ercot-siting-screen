@@ -1,11 +1,11 @@
 /*  20_vw_county_factor.sql
     Every scoring input, in TALL form: one row per county per factor.
 
-    WHY TALL AND NOT WIDE: adding a factor in Stage 2 or 3 becomes a single
-    UNION ALL block plus one INSERT into dim.score_weight. Nothing downstream
-    changes - not the normalisation, not the scoring view, not the Power BI
-    model. This is what makes the weekend version scale into the three-week
-    version without a rewrite.
+    WHY TALL AND NOT WIDE: adding a factor is a single UNION ALL block plus one
+    INSERT into dim.score_weight. Nothing downstream changes - not the
+    normalisation, not rpt.county_score, not the Power BI model. Stage 1b was
+    the first real test of that claim and it held: the density factor below was
+    added without editing 21_vw_county_score.sql at all.
 
     Grain: county_fips + factor_key.
     Every county appears for every factor, even at zero. LEFT JOIN from
@@ -46,8 +46,19 @@ FROM dim.county c
 LEFT JOIN fact.generator_capacity f ON f.county_fips = c.county_fips
 GROUP BY c.county_fips
 
--- STAGE 1b: population density (needs Census load into dim.county)
--- STAGE 2:  county capacity factor, generation trend (needs fact.generation_monthly)
--- STAGE 3:  queue congestion, queue withdrawal rate (needs fact.queue_project)
+UNION ALL
+
+-- Factor 3 (Stage 1b): population density, people per square mile.
+-- Land friction proxy. Inverted in dim.score_weight (direction = -1), so an
+-- empty county scores well. Weak proxy: it ignores parcel fragmentation and
+-- existing land use, which are often what actually blocks a site.
+SELECT
+    c.county_fips,
+    'pop_density' AS factor_key,
+    CAST(ISNULL(c.population / NULLIF(c.land_area_sqmi, 0), 0) AS DECIMAL(18,4)) AS raw_value
+FROM dim.county c
+
+-- STAGE 2: county capacity factor, generation trend (needs fact.generation_monthly)
+-- STAGE 3: queue congestion, queue withdrawal rate (needs fact.queue_project)
 ;
 GO

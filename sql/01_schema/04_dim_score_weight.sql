@@ -4,7 +4,7 @@
     This is the single most important design decision in the repo. Because the
     weights live in a table, the Power BI what-if sliders in Stage 4 bind to
     this instead of requiring the scoring logic to be rewritten. Adding a new
-    factor in Stage 2 or 3 = one INSERT here plus one column in rpt.county_score.
+    factor = one INSERT here plus one UNION ALL block in rpt.county_factor.
 
     weight_version lets you keep several named scenarios side by side and show
     how the ranking reshuffles - that is the sensitivity analysis in docs/.
@@ -29,8 +29,11 @@ GO
 
 INSERT INTO dim.score_weight (weight_version, factor_key, weight, direction, factor_label, stage_added)
 VALUES
-    ('baseline', 'installed_mw',  0.5000,  1, 'Existing generation capacity', 1),
-    ('baseline', 'retiring_mw',   0.5000,  1, 'Capacity retiring by 2030',    1);
+    ('baseline', 'installed_mw',  0.4000,  1, 'Existing generation capacity', 1),
+    ('baseline', 'retiring_mw',   0.4000,  1, 'Capacity retiring by 2030',    1),
+    -- direction -1: a LOW population density is favourable, because land is
+    -- cheaper to assemble and there are fewer neighbours to object.
+    ('baseline', 'pop_density',   0.2000, -1, 'Population density',           2);
 GO
 
 -- Sanity: weights in a version must sum to 1. Should return zero rows.
