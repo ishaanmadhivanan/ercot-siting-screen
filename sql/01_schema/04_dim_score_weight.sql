@@ -40,18 +40,12 @@ GO
 INSERT INTO dim.score_weight
     (weight_version, factor_key, weight, direction, transform, factor_label, stage_added)
 VALUES
-    -- Installed capacity is skewed too: Harris has orders of magnitude more
-    -- than a median county. Log scaling stops the metros from flattening the rest.
-    ('baseline', 'installed_mw',  0.4000,  1, 'log',    'Existing generation capacity', 1),
-
-    ('baseline', 'retiring_mw',   0.4000,  1, 'log',    'Capacity retiring by 2030',    1),
-
-    -- Density spans 0.08 to 3,048 people/sq mi, but ~240 of 254 counties sit
-    -- below 100. Linear scaling put nearly every county above 95 after
-    -- inversion, so the factor added a near constant 20 points to everything.
-    -- direction -1: LOW density is favourable - cheaper land, fewer objectors.
-    ('baseline', 'pop_density',   0.2000, -1, 'log',    'Population density',           2);
-GO
+    ('generation', 'installed_mw', 0.4000,  1, 'log', 'Existing generation capacity', 1),
+    ('generation', 'retiring_mw',  0.4000,  1, 'log', 'Capacity retiring by 2030',    1),
+    ('generation', 'pop_density',  0.2000, -1, 'log', 'Population density',           2),
+    ('datacenter', 'installed_mw', 0.5500,  1, 'log', 'Existing generation capacity', 1),
+    ('datacenter', 'retiring_mw',  0.3500,  1, 'log', 'Capacity retiring by 2030',    1),
+    ('datacenter', 'pop_density',  0.1000, -1, 'log', 'Population density',           2);GO
 
 -- Sanity: weights in a version must sum to 1. Should return zero rows.
 SELECT weight_version, SUM(weight) AS total_weight
