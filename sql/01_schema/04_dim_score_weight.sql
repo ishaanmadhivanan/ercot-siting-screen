@@ -45,7 +45,8 @@ VALUES
     ('generation', 'pop_density',  0.2000, -1, 'log', 'Population density',           2),
     ('datacenter', 'installed_mw', 0.5500,  1, 'log', 'Existing generation capacity', 1),
     ('datacenter', 'retiring_mw',  0.3500,  1, 'log', 'Capacity retiring by 2030',    1),
-    ('datacenter', 'pop_density',  0.1000, -1, 'log', 'Population density',           2);GO
+    ('datacenter', 'pop_density',  0.1000, -1, 'log', 'Population density',           2);
+    GO
 
 -- Sanity: weights in a version must sum to 1. Should return zero rows.
 SELECT weight_version, SUM(weight) AS total_weight
