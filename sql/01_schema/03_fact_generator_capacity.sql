@@ -29,6 +29,7 @@ CREATE TABLE fact.generator_capacity (
     planned_retire_year SMALLINT      NULL,
     latitude            DECIMAL(9,6)  NULL,
     longitude           DECIMAL(9,6)  NULL,
+    balancing_authority NVARCHAR(20)  NULL,   -- ERCO, SWPP, MISO, EPE ... see 15_classify_ercot.sql
     CONSTRAINT fk_gen_county FOREIGN KEY (county_fips) REFERENCES dim.county (county_fips)
 );
 GO

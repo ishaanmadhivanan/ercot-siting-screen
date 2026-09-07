@@ -23,11 +23,12 @@ CREATE TABLE stg.generator_capacity (
     operating_year      NVARCHAR(20),
     planned_retire_year NVARCHAR(20),
     latitude            NVARCHAR(40),
-    longitude           NVARCHAR(40)
+    longitude           NVARCHAR(40),
+    balancing_authority NVARCHAR(40)
 );
 GO
 
-DECLARE @repo NVARCHAR(400) = N'D:\sql\ercot-siting-screen';   -- <<< EDIT ME
+DECLARE @repo NVARCHAR(400) = N'D:\sql\ercot-siting-screen';
 
 EXEC('BULK INSERT stg.generator_capacity
       FROM ''' + @repo + '\data\processed\fact_generator_capacity.csv''
@@ -40,10 +41,10 @@ TRUNCATE TABLE fact.generator_capacity;
 INSERT INTO fact.generator_capacity (
     data_vintage_year, plant_code, generator_id, plant_name, county_fips,
     technology, status_code, status_group, nameplate_mw,
-    operating_year, planned_retire_year, latitude, longitude)
+    operating_year, planned_retire_year, latitude, longitude, balancing_authority)
 SELECT
     TRY_CAST(data_vintage_year   AS SMALLINT),
-        TRY_CAST(TRY_CAST(plant_code AS DECIMAL(18,2)) AS INT),
+    TRY_CAST(TRY_CAST(plant_code AS DECIMAL(18,2)) AS INT),
     generator_id,
     plant_name,
     county_fips,
@@ -51,12 +52,13 @@ SELECT
     NULLIF(status_code, ''),
     status_group,
     TRY_CAST(nameplate_mw        AS DECIMAL(12,2)),
-      TRY_CAST(TRY_CAST(operating_year AS DECIMAL(18,2)) AS SMALLINT),
+    TRY_CAST(TRY_CAST(operating_year AS DECIMAL(18,2)) AS SMALLINT),
     TRY_CAST(TRY_CAST(planned_retire_year AS DECIMAL(18,2)) AS SMALLINT),
     TRY_CAST(latitude            AS DECIMAL(9,6)),
-    TRY_CAST(longitude           AS DECIMAL(9,6))
-FROM stg.generator_capacit5y
-WHERE TRY_CAST(TRY_CAST(plant_code AS DECIMAL(18,2)) AS INT) IS NOT NULL;5
+    TRY_CAST(longitude           AS DECIMAL(9,6)),
+    NULLIF(balancing_authority, '')
+FROM stg.generator_capacity
+WHERE TRY_CAST(TRY_CAST(plant_code AS DECIMAL(18,2)) AS INT) IS NOT NULL;
 GO
 
 SELECT status_group, COUNT(*) AS generators, SUM(nameplate_mw) AS total_mw

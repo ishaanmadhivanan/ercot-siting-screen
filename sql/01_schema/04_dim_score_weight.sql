@@ -49,28 +49,26 @@ INSERT INTO dim.score_weight
     (weight_version, factor_key, weight, direction, transform, factor_label, stage_added)
 VALUES
     -- ---------- GENERATION: siting a new power plant ----------
-    -- Land hungry: a 200 MW solar farm needs ~1,500 acres, so land friction
-    -- matters and remoteness is a feature, not a cost. Resource quality is the
-    -- single biggest driver of project economics, which is why capacity factor
-    -- carries real weight here.
-    ('generation', 'installed_mw',     0.2500,  1, 'log',    'Existing generation capacity', 1),
-    ('generation', 'retiring_mw',      0.2500,  1, 'log',    'Capacity retiring by 2030',    1),
-    ('generation', 'pop_density',      0.1500, -1, 'log',    'Population density',           2),
-    ('generation', 'capacity_factor',  0.2000,  1, 'linear', 'Realised capacity factor',     2),
-    ('generation', 'generation_trend', 0.1500,  1, 'linear', 'Generation trend 2020-2024',   2),
+    -- Land hungry, resource driven, tolerant of remoteness.
+    ('generation', 'installed_mw',     0.1500,  1, 'log',    'Existing generation capacity', 1),
+    ('generation', 'retiring_mw',      0.2000,  1, 'log',    'Capacity retiring by 2030',    1),
+    ('generation', 'pop_density',      0.1000, -1, 'log',    'Population density',           2),
+    ('generation', 'capacity_factor',  0.1500,  1, 'linear', 'Realised capacity factor',     2),
+    ('generation', 'generation_trend', 0.1000,  1, 'linear', 'Generation trend 2020-2024',   2),
+    ('generation', 'queue_congestion', 0.2000, -1, 'log',    'Active queue capacity',        3),
+    ('generation', 'queue_attrition',  0.1000, -1, 'linear', 'Queue attrition rate',         3),
 
     -- ---------- DATACENTER: siting a large load ----------
-    -- A hyperscale campus occupies tens of acres, not thousands, so land
-    -- friction is nearly irrelevant. What matters is a grid node that can
-    -- already move hundreds of MW. Capacity factor is downweighted: how hard
-    -- the local plants run says little about whether the grid can serve a new
-    -- load. Generation trend is upweighted, because a county absorbing new
-    -- generation is demonstrably a county where interconnection is achievable.
-    ('datacenter', 'installed_mw',     0.3500,  1, 'log',    'Existing generation capacity', 1),
-    ('datacenter', 'retiring_mw',      0.2500,  1, 'log',    'Capacity retiring by 2030',    1),
+    -- Small footprint, so land friction barely matters. Needs a grid node that
+    -- can already move hundreds of MW, and needs it without queueing behind
+    -- 20 GW of solar. Congestion carries the heaviest single weight here.
+    ('datacenter', 'installed_mw',     0.2000,  1, 'log',    'Existing generation capacity', 1),
+    ('datacenter', 'retiring_mw',      0.2000,  1, 'log',    'Capacity retiring by 2030',    1),
     ('datacenter', 'pop_density',      0.0500, -1, 'log',    'Population density',           2),
-    ('datacenter', 'capacity_factor',  0.1500,  1, 'linear', 'Realised capacity factor',     2),
-    ('datacenter', 'generation_trend', 0.2000,  1, 'linear', 'Generation trend 2020-2024',   2);
+    ('datacenter', 'capacity_factor',  0.1000,  1, 'linear', 'Realised capacity factor',     2),
+    ('datacenter', 'generation_trend', 0.1000,  1, 'linear', 'Generation trend 2020-2024',   2),
+    ('datacenter', 'queue_congestion', 0.2500, -1, 'log',    'Active queue capacity',        3),
+    ('datacenter', 'queue_attrition',  0.1000, -1, 'linear', 'Queue attrition rate',         3);
 GO
 
 -- Sanity: weights within each version must sum to 1. Should return zero rows.

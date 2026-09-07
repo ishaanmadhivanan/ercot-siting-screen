@@ -150,20 +150,89 @@ LEFT JOIN (
     GROUP BY g.county_fips
 ) t ON t.county_fips = c.county_fips
 
--- STAGE 3: queue congestion, queue withdrawal rate (needs fact.queue_project)
+UNION ALL
+
+-- Factor 6 (Stage 3): active interconnection queue capacity in the county.
+--
+-- DIRECTION IS NEGATIVE, AND THAT IS THE THESIS OF THIS MODEL.
+-- A crowded queue is genuinely ambiguous evidence. It marks a county that many
+-- developers have independently judged attractive, which argues for treating it
+-- as a positive. But that judgement is already public and already priced in -
+-- it is old news. A new entrant arriving into 20 GW of competing requests
+-- inherits longer studies, contested interconnection capacity, and a weaker
+-- negotiating position on land.
+--
+-- The other six factors already capture whether a county is attractive. This
+-- one carries the cost of everyone else having noticed first. The model earns
+-- its keep by surfacing counties with strong fundamentals and a thin queue.
+SELECT
+    c.county_fips,
+    'queue_congestion' AS factor_key,
+    CAST(ISNULL(SUM(CASE WHEN q.status = 'Active' THEN q.capacity_mw END), 0)
+         AS DECIMAL(18,4)) AS raw_value
+FROM dim.county c
+LEFT JOIN fact.queue_project q ON q.county_fips = c.county_fips
+GROUP BY c.county_fips
+
+UNION ALL
+
+-- Factor 7 (Stage 3): queue attrition, shrunk toward the statewide rate.
+--
+-- The naive rate is  inactive_mw / (active_mw + inactive_mw).
+-- It fails the same way the first generation_trend attempt did: only 85 of 254
+-- counties have any inactive projects at all, so 169 counties would post a
+-- perfect 0% attrition. That is not a clean track record, it is the absence of
+-- a track record, and it would hand a top score to any county with two active
+-- projects and no history.
+--
+-- This applies shrinkage instead. Each county's rate is blended toward the
+-- statewide rate (~7.7%) in inverse proportion to its volume:
+--
+--     (inactive_mw + k * statewide_rate) / (total_mw + k)
+--
+-- k = 500 MW acts as a pseudo-observation. A county with 20 GW of queue barely
+-- moves; a county with 50 MW sits almost exactly on the statewide rate until it
+-- accumulates enough history to argue otherwise. Standard empirical-Bayes
+-- treatment for small-sample rates.
+--
+-- CAVEAT: Inactive Projects is a cumulative list while Active is a current
+-- snapshot, so this is not a true historical failure rate. It is the ratio of
+-- accumulated withdrawals to present activity, which is a proxy for the same
+-- thing and should be read as one.
+SELECT
+    c.county_fips,
+    'queue_attrition' AS factor_key,
+    CAST(
+        (ISNULL(q.inactive_mw, 0) + 500.0 * sw.statewide_rate)
+        / (ISNULL(q.total_mw, 0) + 500.0)
+    AS DECIMAL(18,4)) AS raw_value
+FROM dim.county c
+LEFT JOIN (
+    SELECT county_fips,
+           SUM(CASE WHEN status = 'Inactive' THEN capacity_mw ELSE 0 END) AS inactive_mw,
+           SUM(capacity_mw)                                                AS total_mw
+    FROM fact.queue_project
+    GROUP BY county_fips
+) q ON q.county_fips = c.county_fips
+CROSS JOIN (
+    SELECT SUM(CASE WHEN status = 'Inactive' THEN capacity_mw ELSE 0 END)
+           / NULLIF(SUM(capacity_mw), 0) AS statewide_rate
+    FROM fact.queue_project
+) sw
+
 ;
 GO
 
--- Spot check: the trend factor should now spread, not pile up at a ceiling.
-SELECT TOP 10 c.county_name, f.raw_value
+-- Spot check: the counties with strong fundamentals but a thin queue are the
+-- ones this model exists to find. Compare congestion against installed capacity.
+SELECT TOP 15
+    c.county_name,
+    CAST(MAX(CASE WHEN f.factor_key = 'installed_mw'     THEN f.raw_value END) AS DECIMAL(12,0)) AS installed_mw,
+    CAST(MAX(CASE WHEN f.factor_key = 'queue_congestion' THEN f.raw_value END) AS DECIMAL(12,0)) AS queue_mw,
+    CAST(MAX(CASE WHEN f.factor_key = 'queue_attrition'  THEN f.raw_value END) AS DECIMAL(6,4))  AS attrition
 FROM rpt.county_factor f
 JOIN dim.county c ON c.county_fips = f.county_fips
-WHERE f.factor_key = 'generation_trend'
-ORDER BY f.raw_value DESC;
-
-SELECT COUNT(*) AS counties_sharing_the_max_value
-FROM rpt.county_factor
-WHERE factor_key = 'generation_trend'
-  AND raw_value = (SELECT MAX(raw_value) FROM rpt.county_factor
-                   WHERE factor_key = 'generation_trend');
+GROUP BY c.county_name
+HAVING MAX(CASE WHEN f.factor_key = 'installed_mw' THEN f.raw_value END) > 500
+ORDER BY MAX(CASE WHEN f.factor_key = 'queue_congestion' THEN f.raw_value END) ASC;
 GO

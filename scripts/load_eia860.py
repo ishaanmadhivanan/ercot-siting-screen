@@ -41,7 +41,8 @@ SHEET_STATUS_GROUP = {
 OUT_COLUMNS = [
     "data_vintage_year", "plant_code", "generator_id", "plant_name", "county_fips",
     "technology", "status_code", "status_group", "nameplate_mw",
-    "operating_year", "planned_retire_year", "latitude", "longitude",
+        "operating_year", "planned_retire_year", "latitude", "longitude",
+    "balancing_authority",
 ]
 
 
@@ -116,11 +117,12 @@ def main(zip_path: str) -> None:
         p_county = pick(plants, "County")
         p_lat = pick(plants, "Latitude")
         p_lon = pick(plants, "Longitude")
+        p_ba = pick(plants, "Balancing Authority Code", "Balancing Authority")
 
         plants = plants[plants[p_state].astype(str).str.strip().str.upper() == STATE]
-        plants = plants[[p_code, p_name, p_county, p_lat, p_lon]].rename(columns={
+        plants = plants[[p_code, p_name, p_county, p_lat, p_lon, p_ba]].rename(columns={
             p_code: "plant_code", p_name: "plant_name", p_county: "county_raw",
-            p_lat: "latitude", p_lon: "longitude",
+            p_lat: "latitude", p_lon: "longitude", p_ba: "balancing_authority",
         })
 
         frames = []
@@ -185,6 +187,15 @@ def main(zip_path: str) -> None:
     print(f"  counties represented : {df['county_fips'].nunique()} of 254")
     print(f"  operating capacity   : {operating:,.0f} MW")
     print(f"  by status            : {df['status_group'].value_counts().to_dict()}")
+    ba = df["balancing_authority"].fillna("(blank)")
+    print("\n  balancing authorities present:")
+    for code, n in ba.value_counts().items():
+        print(f"    {code:12} {n:5} generators")
+    ercot_counties = set(df.loc[ba == "ERCO", "county_fips"])
+    other_counties = set(df["county_fips"]) - ercot_counties
+    print(f"\n  counties with at least one ERCOT plant : {len(ercot_counties)}")
+    print(f"  counties with generators but none ERCOT : {len(other_counties)}")
+    print(f"  counties with no generators at all      : {254 - df['county_fips'].nunique()}")
 
 
 if __name__ == "__main__":
