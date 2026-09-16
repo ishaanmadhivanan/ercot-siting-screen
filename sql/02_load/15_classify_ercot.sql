@@ -35,18 +35,41 @@ GO
 UPDATE dim.county SET in_ercot = 0;
 GO
 
--- Test 1: an ERCO plant in the county.
+/*  Classification by MAJORITY OF CAPACITY, not by presence.
+
+    The presence test failed on El Paso County. A single RETIRED 200 MW plant
+    coded ERCO outvoted roughly 1,700 MW of operating El Paso Electric plant,
+    and the county ranked #1 in a model named after ERCOT.
+
+    Texas has counties that genuinely straddle grid boundaries, so majority
+    share is the more honest question to ask of a county containing both.
+    Restricting to operating capacity also stops retired plant from voting.
+*/
 UPDATE c SET c.in_ercot = 1
 FROM dim.county c
-WHERE EXISTS (SELECT 1 FROM fact.generator_capacity g
-              WHERE g.county_fips = c.county_fips
-                AND g.balancing_authority = 'ERCO');
+JOIN (
+    SELECT county_fips,
+           SUM(CASE WHEN balancing_authority = 'ERCO' THEN nameplate_mw ELSE 0 END) AS erco_mw,
+           SUM(nameplate_mw) AS total_mw
+    FROM fact.generator_capacity
+    WHERE status_group = 'Operating'
+    GROUP BY county_fips
+) g ON g.county_fips = c.county_fips
+WHERE g.total_mw > 0
+  AND g.erco_mw / g.total_mw > 0.5;
 GO
 
--- Test 2: an ERCOT interconnection request in the county.
+/*  Counties with no operating generation cannot be classified by capacity.
+    For those only, fall back to the queue: an ERCOT interconnection request
+    is direct evidence of participation in the ERCOT market.
+*/
 UPDATE c SET c.in_ercot = 1
 FROM dim.county c
-WHERE EXISTS (SELECT 1 FROM fact.queue_project q
+WHERE c.in_ercot = 0
+  AND NOT EXISTS (SELECT 1 FROM fact.generator_capacity g
+                  WHERE g.county_fips = c.county_fips
+                    AND g.status_group = 'Operating')
+  AND EXISTS (SELECT 1 FROM fact.queue_project q
               WHERE q.county_fips = c.county_fips);
 GO
 

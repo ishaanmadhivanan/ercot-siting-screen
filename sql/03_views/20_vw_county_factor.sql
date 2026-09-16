@@ -5,6 +5,14 @@
     INSERT into dim.score_weight. Nothing downstream changes - not the
     normalisation, not rpt.county_score, not the Power BI model.
 
+    SCOPE FILTER (Stage 3): every block carries WHERE c.in_ercot = 1.
+    Texas has 254 counties but only 211 participate in ERCOT; the rest sit in
+    SPP, MISO, SERC or WECC. Excluding them matters twice over. They would
+    receive a perfect zero on queue congestion simply because ERCOT does not
+    cover them, and - less obviously - leaving them in distorts the min-max
+    bounds for EVERY factor, so their presence changes the score of counties
+    that are legitimately in scope.
+
     Grain: county_fips + factor_key.
     Every county appears for every factor, even at zero. LEFT JOIN from
     dim.county is deliberate - a county with no generators must score 0, not
@@ -26,6 +34,7 @@ SELECT
                          THEN f.nameplate_mw END), 0) AS DECIMAL(18,4)) AS raw_value
 FROM dim.county c
 LEFT JOIN fact.generator_capacity f ON f.county_fips = c.county_fips
+WHERE c.in_ercot = 1
 GROUP BY c.county_fips
 
 UNION ALL
@@ -42,6 +51,7 @@ SELECT
                          THEN f.nameplate_mw END), 0) AS DECIMAL(18,4)) AS raw_value
 FROM dim.county c
 LEFT JOIN fact.generator_capacity f ON f.county_fips = c.county_fips
+WHERE c.in_ercot = 1
 GROUP BY c.county_fips
 
 UNION ALL
@@ -55,6 +65,7 @@ SELECT
     'pop_density' AS factor_key,
     CAST(ISNULL(c.population / NULLIF(c.land_area_sqmi, 0), 0) AS DECIMAL(18,4)) AS raw_value
 FROM dim.county c
+WHERE c.in_ercot = 1
 
 UNION ALL
 
@@ -98,6 +109,7 @@ LEFT JOIN (
     WHERE g.month_key BETWEEN 202401 AND 202412
     GROUP BY g.county_fips
 ) gen ON gen.county_fips = c.county_fips
+WHERE c.in_ercot = 1
 
 UNION ALL
 
@@ -149,6 +161,7 @@ LEFT JOIN (
     WHERE m.year IN (2020, 2024)
     GROUP BY g.county_fips
 ) t ON t.county_fips = c.county_fips
+WHERE c.in_ercot = 1
 
 UNION ALL
 
@@ -172,6 +185,7 @@ SELECT
          AS DECIMAL(18,4)) AS raw_value
 FROM dim.county c
 LEFT JOIN fact.queue_project q ON q.county_fips = c.county_fips
+WHERE c.in_ercot = 1
 GROUP BY c.county_fips
 
 UNION ALL
@@ -219,6 +233,7 @@ CROSS JOIN (
            / NULLIF(SUM(capacity_mw), 0) AS statewide_rate
     FROM fact.queue_project
 ) sw
+WHERE c.in_ercot = 1
 
 ;
 GO
