@@ -14,6 +14,11 @@
       'higher' / 'lower' - fixed
       'preset'           - depends on the use case (see dim.score_weight)
       'none'             - descriptive text with no better or worse
+
+    score_transform (score metrics only, used by rpt.county_factor_score):
+      'linear' - raw value
+      'log'    - LOG(1 + value), for right-skewed counts and MW where a few
+                 counties dwarf the rest
 */
 
 USE ErcotSiting;
@@ -34,6 +39,8 @@ CREATE TABLE dim.metric (
     data_date         DATE           NULL,       -- as of when the underlying data is current
     caveat            NVARCHAR(400)  NULL,
     stage_added       SMALLINT       NOT NULL,
+    score_transform   VARCHAR(10)    NOT NULL CONSTRAINT df_metric_transform DEFAULT 'linear',
+    CONSTRAINT ck_metric_transform CHECK (score_transform IN ('linear', 'log')),
     CONSTRAINT ck_metric_type CHECK (metric_type IN ('score', 'flag', 'context')),
     CONSTRAINT ck_metric_dir  CHECK (better_direction IN ('higher', 'lower', 'preset', 'none'))
 );
@@ -122,7 +129,46 @@ VALUES
 
 ('nox_offset_cost_per_tpy', 'NOx offset cost per tpy emitted', 'air', 'flag', 'USD per tpy', 'lower',
  'Derived: offset ratio x area median credit price', NULL, '2026-09-11',
- 'Up-front credit cost per ton/year of NOx the plant will emit; multiply by your own plant''s emissions. 0 in attainment counties; missing where the area has no priced trades.', 5);
+ 'Up-front credit cost per ton/year of NOx the plant will emit; multiply by your own plant''s emissions. 0 in attainment counties; missing where the area has no priced trades.', 5),
+
+-- ---------- Phase 3: gas access (RRC pipeline map, LNG terminals) ----------
+('gas_pipe_miles', 'Gas transmission pipe', 'gas', 'score', 'miles', 'higher',
+ 'Railroad Commission of Texas pipeline map (TPMS), in-service NGT lines', 'https://gis.rrc.texas.gov/server/rest/services/rrc_public/tpms/MapServer/0', '2026-09-30',
+ 'Miles of existing pipe, not spare capacity: capacity, pressure and flow are not public for intrastate lines. Says a plant could connect, not that gas is available.', 6),
+
+('gas_pipe_large_miles', 'Large gas pipe (20 in and up)', 'gas', 'score', 'miles', 'higher',
+ 'Railroad Commission of Texas pipeline map (TPMS), in-service NGT lines', 'https://gis.rrc.texas.gov/server/rest/services/rrc_public/tpms/MapServer/0', '2026-09-30',
+ 'Diameter stands in for capacity, which is not published. Large trunk lines are the ones typically able to supply a utility-scale plant; small lines mostly serve towns and industry.', 6),
+
+('gas_pipe_operators', 'Gas pipeline operators', 'gas', 'score', 'operators', 'higher',
+ 'Railroad Commission of Texas pipeline map (TPMS), in-service NGT lines', 'https://gis.rrc.texas.gov/server/rest/services/rrc_public/tpms/MapServer/0', '2026-09-30',
+ 'Distinct operators (RRC P-5 number) with at least 1 mile of transmission pipe in the county. More operators means more supply options and negotiating leverage.', 6),
+
+('gas_pipe_interstate_miles', 'Interstate gas pipe', 'gas', 'score', 'miles', 'higher',
+ 'Railroad Commission of Texas pipeline map (TPMS), in-service NGT lines flagged interstate', 'https://gis.rrc.texas.gov/server/rest/services/rrc_public/tpms/MapServer/0', '2026-09-30',
+ 'Interstate lines are FERC regulated with published, open-access tariffs. Intrastate lines (about three quarters of Texas mileage) negotiate service privately.', 6),
+
+('gas_gathering_miles', 'Gas gathering pipe', 'gas', 'score', 'miles', 'higher',
+ 'Railroad Commission of Texas pipeline map (TPMS), in-service NGG and NFG lines', 'https://gis.rrc.texas.gov/server/rest/services/rrc_public/tpms/MapServer/0', '2026-09-30',
+ 'Proxy for nearby gas production (Permian, Eagle Ford, Haynesville), where gas tends to be cheapest. Gathering lines carry raw well gas and cannot feed a plant directly. Stored in fact.county_attribute.', 6),
+
+('lng_terminal_count', 'LNG export terminals', 'gas', 'context', 'terminals', 'none',
+ 'Hand-built list (data/seed/lng_terminals.csv); Golden Pass status from EIA, April 2026', 'https://www.eia.gov/todayinenergy/detail.php?id=67564', '2026-09-30',
+ 'Operating or under construction. Competing demand for pipeline gas; also a sign of large-diameter supply lines nearby. Status needs periodic review.', 6),
+
+('lng_terminals', 'LNG export terminals (names)', 'gas', 'context', 'text', 'none',
+ 'Hand-built list (data/seed/lng_terminals.csv)', NULL, '2026-09-30',
+ 'Terminal names with status, e.g. "Golden Pass LNG (Operating); Port Arthur LNG (Under construction)".', 6);
+GO
+
+-- Transform used when each score metric is put on a 0-100 scale. Matches the
+-- presets in dim.score_weight: log for skewed MW, miles and counts.
+UPDATE dim.metric
+SET score_transform = 'log'
+WHERE metric_key IN ('installed_mw', 'retiring_mw', 'pop_density', 'queue_congestion',
+                     'aging_thermal_mw', 'gas_queue_mw',
+                     'gas_pipe_miles', 'gas_pipe_large_miles', 'gas_pipe_operators',
+                     'gas_pipe_interstate_miles', 'gas_gathering_miles');
 GO
 
 -- Check 1: every factor the model scores has a catalog row. Should return zero rows.
@@ -138,7 +184,7 @@ LEFT JOIN dim.metric m ON m.metric_key = w.factor_key
 WHERE m.metric_key IS NULL;
 
 -- Check 2: the catalog as a reader would see it.
-SELECT metric_key, label, category, metric_type, unit, better_direction, data_date
+SELECT metric_key, label, category, metric_type, unit, better_direction, score_transform, data_date
 FROM dim.metric
 ORDER BY stage_added, metric_key;
 GO

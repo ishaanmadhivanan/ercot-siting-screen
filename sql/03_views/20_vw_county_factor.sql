@@ -246,6 +246,58 @@ LEFT JOIN fact.county_attribute a
        ON a.county_fips = c.county_fips
       AND a.attribute_key = 'ozone_classification'
 WHERE c.in_ercot = 1
+
+UNION ALL
+
+-- Factors 12-15 (Phase 3, gas access): in-service gas TRANSMISSION pipe, from
+-- fact.pipeline_segment (RRC pipeline map). One pass over the table, then
+-- unpivoted into four factors. Counties with no pipe score 0 on all four.
+--   gas_pipe_miles            all transmission miles
+--   gas_pipe_large_miles      20 inch and larger (stands in for capacity)
+--   gas_pipe_interstate_miles FERC-regulated, open-access lines
+--   gas_pipe_operators        operators with at least 1 mile in the county
+SELECT
+    c.county_fips,
+    v.factor_key,
+    CAST(ISNULL(v.raw_value, 0) AS DECIMAL(18,4)) AS raw_value
+FROM dim.county c
+LEFT JOIN (
+    SELECT county_fips,
+           SUM(miles)                                               AS total_miles,
+           SUM(CASE WHEN diameter_in >= 20 THEN miles ELSE 0 END)   AS large_miles,
+           SUM(CASE WHEN interstate = 'Y' THEN miles ELSE 0 END)    AS interstate_miles
+    FROM fact.pipeline_segment
+    GROUP BY county_fips
+) p ON p.county_fips = c.county_fips
+LEFT JOIN (
+    SELECT county_fips, COUNT(*) AS operators
+    FROM (SELECT county_fips, operator_p5
+          FROM fact.pipeline_segment
+          GROUP BY county_fips, operator_p5
+          HAVING SUM(miles) >= 1) o
+    GROUP BY county_fips
+) op ON op.county_fips = c.county_fips
+CROSS APPLY (VALUES
+    ('gas_pipe_miles',            p.total_miles),
+    ('gas_pipe_large_miles',      p.large_miles),
+    ('gas_pipe_interstate_miles', p.interstate_miles),
+    ('gas_pipe_operators',        CAST(op.operators AS DECIMAL(18,4)))
+) v (factor_key, raw_value)
+WHERE c.in_ercot = 1
+
+UNION ALL
+
+-- Factor 16 (Phase 3, gas access): gas GATHERING pipe miles, a proxy for nearby
+-- production. Summed on the RRC server and stored in fact.county_attribute.
+SELECT
+    c.county_fips,
+    'gas_gathering_miles' AS factor_key,
+    CAST(ISNULL(a.value_num, 0) AS DECIMAL(18,4)) AS raw_value
+FROM dim.county c
+LEFT JOIN fact.county_attribute a
+       ON a.county_fips = c.county_fips
+      AND a.attribute_key = 'gas_gathering_miles'
+WHERE c.in_ercot = 1
 ;
 GO
 
@@ -270,4 +322,20 @@ FROM rpt.county_factor f
 WHERE f.factor_key = 'ozone_severity'
 GROUP BY f.raw_value
 ORDER BY f.raw_value;
+GO
+
+-- Spot check (Phase 3): top 10 ERCOT counties by large-diameter gas pipe.
+-- Expect Harris, Pecos, Reeves, Brazoria and Wharton near the top.
+SELECT TOP 10
+    c.county_name,
+    MAX(CASE WHEN f.factor_key = 'gas_pipe_large_miles'      THEN f.raw_value END) AS large_miles,
+    MAX(CASE WHEN f.factor_key = 'gas_pipe_miles'            THEN f.raw_value END) AS all_miles,
+    MAX(CASE WHEN f.factor_key = 'gas_pipe_interstate_miles' THEN f.raw_value END) AS interstate_miles,
+    MAX(CASE WHEN f.factor_key = 'gas_pipe_operators'        THEN f.raw_value END) AS operators,
+    MAX(CASE WHEN f.factor_key = 'gas_gathering_miles'       THEN f.raw_value END) AS gathering_miles
+FROM rpt.county_factor f
+JOIN dim.county c ON c.county_fips = f.county_fips
+WHERE f.factor_key LIKE 'gas[_]pipe%' OR f.factor_key = 'gas_gathering_miles'
+GROUP BY c.county_name
+ORDER BY large_miles DESC;
 GO
