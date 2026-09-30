@@ -13,6 +13,7 @@
     better_direction:
       'higher' / 'lower' - fixed
       'preset'           - depends on the use case (see dim.score_weight)
+      'none'             - descriptive text with no better or worse
 */
 
 USE ErcotSiting;
@@ -34,7 +35,7 @@ CREATE TABLE dim.metric (
     caveat            NVARCHAR(400)  NULL,
     stage_added       SMALLINT       NOT NULL,
     CONSTRAINT ck_metric_type CHECK (metric_type IN ('score', 'flag', 'context')),
-    CONSTRAINT ck_metric_dir  CHECK (better_direction IN ('higher', 'lower', 'preset'))
+    CONSTRAINT ck_metric_dir  CHECK (better_direction IN ('higher', 'lower', 'preset', 'none'))
 );
 GO
 
@@ -82,7 +83,46 @@ VALUES
 
 ('gas_capacity_factor', 'Gas fleet capacity factor', 'grid', 'score', 'ratio 0-1', 'higher',
  'EIA Form 923 (2024, fuel code NG) with EIA-860 gas capacity', 'https://www.eia.gov/electricity/data/eia923/', '2024-12-31',
- 'How hard existing gas plants run. Counties with no gas fleet score 0 (no evidence either way). Capped at 1.0.', 4);
+ 'How hard existing gas plants run. Counties with no gas fleet score 0 (no evidence either way). Capped at 1.0.', 4),
+
+-- ---------- Phase 2: air permitting (ozone nonattainment and NOx offsets) ----------
+-- The score: one number per county that can be weighted like any other factor.
+('ozone_severity', 'Ozone nonattainment severity', 'air', 'score', 'rank 0-5', 'lower',
+ 'EPA Green Book (current as of August 31, 2026)', 'https://www3.epa.gov/airquality/greenbook/anayo_tx.html', '2026-08-31',
+ '0 Attainment, 1 Marginal, 2 Moderate, 3 Serious, 4 Severe, 5 Extreme. Strictest current ozone standard (2008 or 2015). Whole-county designations only in Texas today.', 5),
+
+-- The attributes: filters and context, stored in fact.county_attribute, never weighted.
+('ozone_classification', 'Ozone classification', 'air', 'flag', 'category', 'lower',
+ 'EPA Green Book (current as of August 31, 2026)', 'https://www3.epa.gov/airquality/greenbook/anayo_tx.html', '2026-08-31',
+ 'value_text holds the class name, value_num the severity rank. Houston and Dallas-Fort Worth are Severe under 2008 and Serious under 2015; permitting follows the stricter one.', 5),
+
+('ozone_standards_detail', 'Ozone standards breached', 'air', 'context', 'text', 'none',
+ 'EPA Green Book (current as of August 31, 2026)', 'https://www3.epa.gov/airquality/greenbook/anayo_tx.html', '2026-08-31',
+ 'Each current ozone standard the county violates and its class, e.g. "2008: Severe 15; 2015: Serious". Nonattainment counties only.', 5),
+
+('nox_major_source_tpy', 'NOx major source threshold', 'air', 'flag', 'tons per year', 'higher',
+ 'Clean Air Act Title I, Part D (versioned in data/seed/ozone_classification_rules.csv)', 'https://www.epa.gov/nsr/nonattainment-nsr-basic-information', NULL,
+ 'A plant emitting at or above this much NOx needs nonattainment review and must buy offsets. Nonattainment counties only. Attainment counties go through PSD review instead: pollution controls, but no offsets to buy.', 5),
+
+('nox_offset_ratio', 'NOx offset ratio', 'air', 'flag', 'tons of credit per ton emitted', 'lower',
+ 'Clean Air Act Title I, Part D (versioned in data/seed/ozone_classification_rules.csv)', 'https://www.epa.gov/nsr/nonattainment-nsr-basic-information', NULL,
+ 'Tons of emission credit a major source must buy per ton of NOx it will emit. 0 in attainment counties (no offsets required).', 5),
+
+('nox_credit_trades', 'NOx credit trades (area)', 'air', 'context', 'trades', 'higher',
+ 'TCEQ Emission Credit Trade Report', 'https://www.tceq.texas.gov/assets/public/permitting/air/reports/banking/ectradereport.html', '2026-09-11',
+ 'Priced NOx credit trades in the county''s nonattainment area, Oct 2024 to Sep 2026. Credits must come from the same area. A thin market means credits may not be available at any price.', 5),
+
+('nox_credit_tons_traded', 'NOx credit tons traded (area)', 'air', 'context', 'tons per year', 'higher',
+ 'TCEQ Emission Credit Trade Report', 'https://www.tceq.texas.gov/assets/public/permitting/air/reports/banking/ectradereport.html', '2026-09-11',
+ 'Total credit volume in priced NOx trades, Oct 2024 to Sep 2026. Houston traded 87 tpy in two years; a single 100 tpy plant at 1.3:1 would need 130.', 5),
+
+('nox_credit_price_per_tpy', 'NOx credit price (area median)', 'air', 'context', 'USD per tpy', 'lower',
+ 'TCEQ Emission Credit Trade Report', 'https://www.tceq.texas.gov/assets/public/permitting/air/reports/banking/ectradereport.html', '2026-09-11',
+ 'Median price of priced NOx trades in the area, one-time purchase per ton/year of credit. Missing (not zero) where the area had no priced trades: San Antonio and El Paso.', 5),
+
+('nox_offset_cost_per_tpy', 'NOx offset cost per tpy emitted', 'air', 'flag', 'USD per tpy', 'lower',
+ 'Derived: offset ratio x area median credit price', NULL, '2026-09-11',
+ 'Up-front credit cost per ton/year of NOx the plant will emit; multiply by your own plant''s emissions. 0 in attainment counties; missing where the area has no priced trades.', 5);
 GO
 
 -- Check 1: every factor the model scores has a catalog row. Should return zero rows.

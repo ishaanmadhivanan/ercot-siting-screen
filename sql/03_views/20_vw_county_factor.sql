@@ -229,6 +229,23 @@ LEFT JOIN (
     GROUP BY g.county_fips
 ) gen ON gen.county_fips = c.county_fips
 WHERE c.in_ercot = 1
+
+UNION ALL
+
+-- Factor 11 (Phase 2, air): ozone nonattainment severity, 0 (Attainment) to 5 (Extreme).
+-- The one air number that can be weighted. It is read from fact.county_attribute,
+-- which holds the full air detail (offset ratio, credit price, market depth) as
+-- filters and context. Loaded by sql/02_load/16_load_air.sql.
+-- A county missing from the attribute table is treated as Attainment (0).
+SELECT
+    c.county_fips,
+    'ozone_severity' AS factor_key,
+    CAST(ISNULL(a.value_num, 0) AS DECIMAL(18,4)) AS raw_value
+FROM dim.county c
+LEFT JOIN fact.county_attribute a
+       ON a.county_fips = c.county_fips
+      AND a.attribute_key = 'ozone_classification'
+WHERE c.in_ercot = 1
 ;
 GO
 
@@ -244,4 +261,13 @@ WHERE f.factor_key = 'gas_queue_mw' ORDER BY f.raw_value DESC;
 SELECT TOP 10 c.county_name, f.raw_value AS gas_capacity_factor
 FROM rpt.county_factor f JOIN dim.county c ON c.county_fips = f.county_fips
 WHERE f.factor_key = 'gas_capacity_factor' ORDER BY f.raw_value DESC;
+GO
+
+-- Spot check (Phase 2): ERCOT counties by ozone severity. Expect 178 at 0, 1 at 3 (Bexar), 16 at 4 (Houston and DFW).
+-- Not counted: El Paso (Marginal, WECC) and Liberty and Montgomery (Severe, but mostly MISO).
+SELECT f.raw_value AS ozone_severity, COUNT(*) AS counties
+FROM rpt.county_factor f
+WHERE f.factor_key = 'ozone_severity'
+GROUP BY f.raw_value
+ORDER BY f.raw_value;
 GO
