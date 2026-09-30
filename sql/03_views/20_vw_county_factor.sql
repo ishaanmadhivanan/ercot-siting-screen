@@ -2,21 +2,19 @@
     Every scoring input, in TALL form: one row per county per factor.
 
     WHY TALL AND NOT WIDE: adding a factor is a single UNION ALL block plus one
-    INSERT into dim.score_weight. Nothing downstream changes - not the
-    normalisation, not rpt.county_score, not the Power BI model.
+    INSERT into dim.score_weight and one row in dim.metric. Nothing downstream
+    changes - not the normalisation, not rpt.county_score, not the Power BI model.
 
     SCOPE FILTER (Stage 3): every block carries WHERE c.in_ercot = 1.
-    Texas has 254 counties but only 211 participate in ERCOT; the rest sit in
-    SPP, MISO, SERC or WECC. Excluding them matters twice over. They would
-    receive a perfect zero on queue congestion simply because ERCOT does not
-    cover them, and - less obviously - leaving them in distorts the min-max
-    bounds for EVERY factor, so their presence changes the score of counties
-    that are legitimately in scope.
+    Texas has 254 counties but only 195 are classified as ERCOT; the rest sit in
+    SPP, MISO, SERC or WECC. Leaving them in would hand them a perfect zero on
+    queue congestion and distort the min-max bounds for every factor.
+
+    A factor that appears here but has no weight in a given weight_version is
+    simply ignored by that version (the scoring view inner-joins on weights).
+    That is how the gas-specific factors below coexist with the older presets.
 
     Grain: county_fips + factor_key.
-    Every county appears for every factor, even at zero. LEFT JOIN from
-    dim.county is deliberate - a county with no generators must score 0, not
-    vanish from the map.
 */
 
 USE ErcotSiting;
@@ -24,9 +22,8 @@ GO
 
 CREATE OR ALTER VIEW rpt.county_factor AS
 
--- Factor 1 (Stage 1): existing installed generation capacity.
--- Proxy for transmission presence. Where generation already sits, there is
--- already interconnection infrastructure and a studied point of connection.
+-- Factor 1 (Stage 1): existing installed generation capacity, all fuels.
+-- Proxy for transmission presence.
 SELECT
     c.county_fips,
     'installed_mw' AS factor_key,
@@ -39,10 +36,7 @@ GROUP BY c.county_fips
 
 UNION ALL
 
--- Factor 2 (Stage 1): capacity with a planned retirement on or before 2030.
--- The non-obvious signal. A retiring plant frees up interconnection rights and
--- an existing point of connection - often the fastest path to a large grid
--- connection anywhere in the state.
+-- Factor 2 (Stage 1): capacity with a planned retirement on or before 2030, all fuels.
 SELECT
     c.county_fips,
     'retiring_mw' AS factor_key,
@@ -57,9 +51,6 @@ GROUP BY c.county_fips
 UNION ALL
 
 -- Factor 3 (Stage 1b): population density, people per square mile.
--- Land friction proxy. Inverted in dim.score_weight (direction = -1), so an
--- empty county scores well. Weak proxy: it ignores parcel fragmentation and
--- existing land use, which are often what actually blocks a site.
 SELECT
     c.county_fips,
     'pop_density' AS factor_key,
@@ -69,19 +60,8 @@ WHERE c.in_ercot = 1
 
 UNION ALL
 
--- Factor 4 (Stage 2): realised capacity factor over the most recent 12 months.
---   actual MWh generated / (installed MW x hours in those months)
--- This is why dim.month exists. Hours per month is not constant, and using a
--- flat 730 would inflate February's contribution by about 4% and understate
--- the 31-day months. Over a year those errors do not cancel evenly.
---
--- Interpretation: how hard the plants in this county actually run. High values
--- indicate good wind/solar resource or baseload plant. It is a resource
--- quality proxy, not a measure of grid headroom.
---
--- Capped at 1.0. Values above that are real in the data but always artefacts:
--- generation reported against a plant whose capacity is recorded under a
--- different plant code, or a generator that came online mid-period.
+-- Factor 4 (Stage 2): realised capacity factor over 2024, all fuels.
+-- actual MWh / (installed MW x hours). Capped at 1.0: values above are artefacts.
 SELECT
     c.county_fips,
     'capacity_factor' AS factor_key,
@@ -101,8 +81,6 @@ LEFT JOIN (
 LEFT JOIN (
     SELECT g.county_fips,
            SUM(g.net_generation_mwh) AS total_mwh,
-           -- SUM(DISTINCT ...) would be wrong here; hours must be counted once
-           -- per month, not once per plant-month, so the months are collapsed first.
            (SELECT SUM(hours_in_month) FROM dim.month
             WHERE month_key BETWEEN 202401 AND 202412) AS total_hours
     FROM fact.generation_monthly g
@@ -113,35 +91,8 @@ WHERE c.in_ercot = 1
 
 UNION ALL
 
--- Factor 5 (Stage 2): generation trend, 2020 vs 2024.
---
--- THREE FORMULAS WERE CONSIDERED. The first two fail on this data:
---
---   percent change (new - old) / old
---       Divides by zero for the ~30 counties with no generation in 2020, and a
---       county going from 10 MWh to 1,000 MWh posts 9,900% growth, which would
---       dominate the min-max normalisation on its own.
---
---   symmetric rate (new - old) / (new + old)
---       Bounded to [-1, +1] and handles zeros, but every county starting from
---       zero lands on exactly 1.0 regardless of how much it added. 30 of 254
---       counties tied at the ceiling - the factor could not discriminate among
---       precisely the counties it should be most informative about. It also
---       broke its own bound where a county reported negative net generation
---       (batteries and idle plants consume more than they produce), which
---       shrinks the denominator faster than the numerator.
---
---   smoothed log ratio  LOG((new + k) / (old + k))     <- used here
---       k = 10,000 MWh, roughly 1 MW running continuously for a year. Growth
---       from a near-zero base is damped rather than infinite, magnitude still
---       separates counties, and zeros are handled without a special case.
---
--- Negative annual generation is floored at zero first: a county that was a net
--- consumer of electricity in a year has no meaningful growth rate, and letting
--- the negative through corrupts the ratio.
---
--- NOTE the transform for this factor in dim.score_weight is 'linear', not
--- 'log' - the log is already applied here, inside the factor.
+-- Factor 5 (Stage 2): generation trend, 2020 vs 2024, smoothed log ratio.
+-- LOG((new + 10,000) / (old + 10,000)); negatives floored at zero first.
 SELECT
     c.county_fips,
     'generation_trend' AS factor_key,
@@ -165,19 +116,7 @@ WHERE c.in_ercot = 1
 
 UNION ALL
 
--- Factor 6 (Stage 3): active interconnection queue capacity in the county.
---
--- DIRECTION IS NEGATIVE, AND THAT IS THE THESIS OF THIS MODEL.
--- A crowded queue is genuinely ambiguous evidence. It marks a county that many
--- developers have independently judged attractive, which argues for treating it
--- as a positive. But that judgement is already public and already priced in -
--- it is old news. A new entrant arriving into 20 GW of competing requests
--- inherits longer studies, contested interconnection capacity, and a weaker
--- negotiating position on land.
---
--- The other six factors already capture whether a county is attractive. This
--- one carries the cost of everyone else having noticed first. The model earns
--- its keep by surfacing counties with strong fundamentals and a thin queue.
+-- Factor 6 (Stage 3): active interconnection queue, all fuels.
 SELECT
     c.county_fips,
     'queue_congestion' AS factor_key,
@@ -190,29 +129,7 @@ GROUP BY c.county_fips
 
 UNION ALL
 
--- Factor 7 (Stage 3): queue attrition, shrunk toward the statewide rate.
---
--- The naive rate is  inactive_mw / (active_mw + inactive_mw).
--- It fails the same way the first generation_trend attempt did: only 85 of 254
--- counties have any inactive projects at all, so 169 counties would post a
--- perfect 0% attrition. That is not a clean track record, it is the absence of
--- a track record, and it would hand a top score to any county with two active
--- projects and no history.
---
--- This applies shrinkage instead. Each county's rate is blended toward the
--- statewide rate (~7.7%) in inverse proportion to its volume:
---
---     (inactive_mw + k * statewide_rate) / (total_mw + k)
---
--- k = 500 MW acts as a pseudo-observation. A county with 20 GW of queue barely
--- moves; a county with 50 MW sits almost exactly on the statewide rate until it
--- accumulates enough history to argue otherwise. Standard empirical-Bayes
--- treatment for small-sample rates.
---
--- CAVEAT: Inactive Projects is a cumulative list while Active is a current
--- snapshot, so this is not a true historical failure rate. It is the ratio of
--- accumulated withdrawals to present activity, which is a proxy for the same
--- thing and should be read as one.
+-- Factor 7 (Stage 3): queue attrition, shrunk toward the statewide rate (k = 500 MW).
 SELECT
     c.county_fips,
     'queue_attrition' AS factor_key,
@@ -235,19 +152,96 @@ CROSS JOIN (
 ) sw
 WHERE c.in_ercot = 1
 
+UNION ALL
+
+-- Factor 8 (Phase 1, gas): gas and coal capacity built 1985 or earlier (40+ years old).
+-- Brownfield signal for a gas developer. Old thermal units are the likeliest to
+-- retire or be repowered, and their sites come with a grid connection, usually a
+-- gas line, water rights and industrial land.
+--
+-- WHY AGE AND NOT ANNOUNCED RETIREMENTS: the first version of this factor used
+-- EIA-860 planned retirement dates. Through 2030 those exist in ERCOT only for
+-- CPS Energy's plants in Bexar (1,875 MW); every other county scored zero, so the
+-- factor acted as a 25% bonus for one county. Owners rarely file retirement dates
+-- years ahead. Age catches 28 counties and 23,600 MW instead.
+SELECT
+    c.county_fips,
+    'aging_thermal_mw' AS factor_key,
+    CAST(ISNULL(SUM(CASE WHEN f.status_group = 'Operating'
+                          AND f.operating_year IS NOT NULL
+                          AND f.operating_year <= 1985
+                          AND d.fuel_category IN ('Gas', 'Coal')
+                         THEN f.nameplate_mw END), 0) AS DECIMAL(18,4)) AS raw_value
+FROM dim.county c
+LEFT JOIN fact.generator_capacity f ON f.county_fips = c.county_fips
+LEFT JOIN dim.fuel d ON d.technology = f.technology
+WHERE c.in_ercot = 1
+GROUP BY c.county_fips
+
+UNION ALL
+
+-- Factor 9 (Phase 1, gas): active GAS projects in the ERCOT queue.
+-- The real competition for a new gas plant: other gas projects seeking the same
+-- interconnection capacity. Solar and battery requests are a different market.
+SELECT
+    c.county_fips,
+    'gas_queue_mw' AS factor_key,
+    CAST(ISNULL(SUM(CASE WHEN q.status = 'Active' AND q.fuel = 'GAS'
+                         THEN q.capacity_mw END), 0) AS DECIMAL(18,4)) AS raw_value
+FROM dim.county c
+LEFT JOIN fact.queue_project q ON q.county_fips = c.county_fips
+WHERE c.in_ercot = 1
+GROUP BY c.county_fips
+
+UNION ALL
+
+-- Factor 10 (Phase 1, gas): capacity factor of existing GAS plants only, 2024.
+-- How hard the county's gas fleet actually runs. High values mean gas plants
+-- there are dispatched often - evidence of good grid access and competitive fuel.
+-- Uses EIA-923 fuel code NG against EIA-860 gas capacity. Counties with no gas
+-- fleet score 0: there is no evidence either way, which the caveat records.
+SELECT
+    c.county_fips,
+    'gas_capacity_factor' AS factor_key,
+    CAST(ISNULL(
+        CASE WHEN cap.gas_mw > 0 AND gen.total_hours > 0
+             THEN CASE WHEN gen.gas_mwh / (cap.gas_mw * gen.total_hours) > 1.0
+                       THEN 1.0
+                       ELSE gen.gas_mwh / (cap.gas_mw * gen.total_hours) END
+        END, 0) AS DECIMAL(18,4)) AS raw_value
+FROM dim.county c
+LEFT JOIN (
+    SELECT f.county_fips,
+           SUM(CASE WHEN f.status_group = 'Operating' AND d.fuel_category = 'Gas'
+                    THEN f.nameplate_mw END) AS gas_mw
+    FROM fact.generator_capacity f
+    JOIN dim.fuel d ON d.technology = f.technology
+    GROUP BY f.county_fips
+) cap ON cap.county_fips = c.county_fips
+LEFT JOIN (
+    SELECT g.county_fips,
+           SUM(g.net_generation_mwh) AS gas_mwh,
+           (SELECT SUM(hours_in_month) FROM dim.month
+            WHERE month_key BETWEEN 202401 AND 202412) AS total_hours
+    FROM fact.generation_monthly g
+    WHERE g.month_key BETWEEN 202401 AND 202412
+      AND g.fuel_type = 'NG'
+    GROUP BY g.county_fips
+) gen ON gen.county_fips = c.county_fips
+WHERE c.in_ercot = 1
 ;
 GO
 
--- Spot check: the counties with strong fundamentals but a thin queue are the
--- ones this model exists to find. Compare congestion against installed capacity.
-SELECT TOP 15
-    c.county_name,
-    CAST(MAX(CASE WHEN f.factor_key = 'installed_mw'     THEN f.raw_value END) AS DECIMAL(12,0)) AS installed_mw,
-    CAST(MAX(CASE WHEN f.factor_key = 'queue_congestion' THEN f.raw_value END) AS DECIMAL(12,0)) AS queue_mw,
-    CAST(MAX(CASE WHEN f.factor_key = 'queue_attrition'  THEN f.raw_value END) AS DECIMAL(6,4))  AS attrition
-FROM rpt.county_factor f
-JOIN dim.county c ON c.county_fips = f.county_fips
-GROUP BY c.county_name
-HAVING MAX(CASE WHEN f.factor_key = 'installed_mw' THEN f.raw_value END) > 500
-ORDER BY MAX(CASE WHEN f.factor_key = 'queue_congestion' THEN f.raw_value END) ASC;
+-- Spot check: top 10 counties on each new gas factor.
+SELECT TOP 10 c.county_name, f.raw_value AS aging_thermal_mw
+FROM rpt.county_factor f JOIN dim.county c ON c.county_fips = f.county_fips
+WHERE f.factor_key = 'aging_thermal_mw' ORDER BY f.raw_value DESC;
+
+SELECT TOP 10 c.county_name, f.raw_value AS gas_queue_mw
+FROM rpt.county_factor f JOIN dim.county c ON c.county_fips = f.county_fips
+WHERE f.factor_key = 'gas_queue_mw' ORDER BY f.raw_value DESC;
+
+SELECT TOP 10 c.county_name, f.raw_value AS gas_capacity_factor
+FROM rpt.county_factor f JOIN dim.county c ON c.county_fips = f.county_fips
+WHERE f.factor_key = 'gas_capacity_factor' ORDER BY f.raw_value DESC;
 GO

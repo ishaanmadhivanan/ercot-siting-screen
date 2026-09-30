@@ -48,7 +48,7 @@ VALUES
 
 ('retiring_mw', 'Capacity retiring by 2030', 'grid', 'score', 'MW', 'higher',
  'EIA Form 860 (2024)', 'https://www.eia.gov/electricity/data/eia860/', '2024-12-31',
- 'Planned retirement dates often slip. Interconnection rights do not transfer automatically.', 1),
+ 'Through 2030, EIA-860 lists planned ERCOT retirements almost only in Bexar, so this barely discriminates between counties. Superseded by aging_thermal_mw in the gas preset.', 1),
 
 ('pop_density', 'Population density', 'land', 'score', 'people per sq mi', 'lower',
  'US Census population estimates (2025) and Gazetteer land area (2024)',
@@ -69,13 +69,32 @@ VALUES
 
 ('queue_attrition', 'Queue attrition rate', 'grid', 'score', 'ratio 0-1', 'lower',
  'ERCOT GIS Report (August 2026)', 'https://www.ercot.com/mp/data-products/data-product-details?id=PG7-200-ER', '2026-08-31',
- 'Shrunk toward the statewide rate for counties with little history. Cumulative withdrawals vs current queue, not a true failure rate.', 3);
+ 'Shrunk toward the statewide rate for counties with little history. Cumulative withdrawals vs current queue, not a true failure rate.', 3),
+
+-- ---------- Phase 1 of the gas pivot: gas-specific versions of existing factors ----------
+('aging_thermal_mw', 'Gas and coal 40+ years old', 'grid', 'score', 'MW', 'higher',
+ 'EIA Form 860 (2024)', 'https://www.eia.gov/electricity/data/eia860/', '2024-12-31',
+ 'Operating gas and coal units built 1985 or earlier. Age proxies for retirement or repowering candidates; it is not an announced retirement.', 4),
+
+('gas_queue_mw', 'Active gas queue', 'grid', 'score', 'MW', 'lower',
+ 'ERCOT GIS Report (August 2026)', 'https://www.ercot.com/mp/data-products/data-product-details?id=PG7-200-ER', '2026-08-31',
+ 'Gas projects only - the direct competition for a new gas plant. Excludes confidential projects not yet in full study.', 4),
+
+('gas_capacity_factor', 'Gas fleet capacity factor', 'grid', 'score', 'ratio 0-1', 'higher',
+ 'EIA Form 923 (2024, fuel code NG) with EIA-860 gas capacity', 'https://www.eia.gov/electricity/data/eia923/', '2024-12-31',
+ 'How hard existing gas plants run. Counties with no gas fleet score 0 (no evidence either way). Capped at 1.0.', 4);
 GO
 
 -- Check 1: every factor the model scores has a catalog row. Should return zero rows.
 SELECT DISTINCT f.factor_key AS missing_from_catalog
 FROM rpt.county_factor f
 LEFT JOIN dim.metric m ON m.metric_key = f.factor_key
+WHERE m.metric_key IS NULL;
+
+-- Check 1b: every factor any preset weights has a catalog row. Should return zero rows.
+SELECT DISTINCT w.factor_key AS weighted_but_undocumented
+FROM dim.score_weight w
+LEFT JOIN dim.metric m ON m.metric_key = w.factor_key
 WHERE m.metric_key IS NULL;
 
 -- Check 2: the catalog as a reader would see it.

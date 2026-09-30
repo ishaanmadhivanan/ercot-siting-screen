@@ -20,6 +20,10 @@
                    tolerant of remoteness.
     'datacenter' - siting a large load. Small footprint, needs a grid node that
                    can already move hundreds of MW.
+    'gas'        - siting a gas-fired plant. The default from Phase 1 onward;
+                   the other two are kept, not deleted.
+
+    stage_added: 1-3 = original build stages, 4 = gas pivot Phase 1.
 */
 
 USE ErcotSiting;
@@ -105,7 +109,23 @@ VALUES
         load-side competition at all. Stated, not hidden.
     */
     ('datacenter', 'queue_congestion', 0.2500,  1, 'log',    'Active queue capacity',        3),
-    ('datacenter', 'queue_attrition',  0.1000, -1, 'linear', 'Queue attrition rate',         3);
+    ('datacenter', 'queue_attrition',  0.1000, -1, 'linear', 'Queue attrition rate',         3),
+
+    -- ---------- GAS: siting a new gas-fired plant (Phase 1, default going forward) ----------
+    -- Swaps the all-fuel factors for gas-specific ones where it matters:
+    --   gas+coal built 1985 or earlier instead of announced retirements (brownfield sites;
+    --   announced retirements through 2030 exist only in Bexar, so they could not discriminate)
+    --   gas queue instead of the whole queue (the competition a gas plant faces)
+    --   gas-fleet capacity factor instead of all-fuel (how hard gas plants run there)
+    -- installed_mw stays as a general grid-presence signal. Pipeline, air and land
+    -- layers join this preset as they are built in Phases 2-4.
+    ('gas',        'installed_mw',          0.1500,  1, 'log',    'Existing generation capacity',   1),
+    ('gas',        'aging_thermal_mw',      0.2500,  1, 'log',    'Gas and coal 40+ years old',     4),
+    ('gas',        'gas_capacity_factor',   0.1000,  1, 'linear', 'Gas fleet capacity factor',      4),
+    ('gas',        'generation_trend',      0.1000,  1, 'linear', 'Generation trend 2020-2024',     2),
+    ('gas',        'gas_queue_mw',          0.2000, -1, 'log',    'Active gas queue',               4),
+    ('gas',        'queue_attrition',       0.1000, -1, 'linear', 'Queue attrition rate',           3),
+    ('gas',        'pop_density',           0.1000, -1, 'log',    'Population density',             2);
 GO
 
 -- Sanity: weights within each version must sum to 1. Should return zero rows.
