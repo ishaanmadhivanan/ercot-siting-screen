@@ -136,7 +136,7 @@ table County
 		source =
 				let
 					Source = Sql.Database(ServerName, DatabaseName, [Query = "SELECT county_fips, county_name, county_name + ' County, Texas' AS map_label, population, land_area_sqmi FROM dim.county WHERE in_ercot = 1"]),
-					Typed = Table.TransformColumnTypes(Source, {{"county_fips", text},{"county_name", text},{"map_label", text},{"population", Int64.Type},{"land_area_sqmi", type number}})
+					Typed = Table.TransformColumnTypes(Source, {{"county_fips", type text},{"county_name", type text},{"map_label", type text},{"population", Int64.Type},{"land_area_sqmi", type number}})
 				in
 					Typed
 

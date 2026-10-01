@@ -86,7 +86,7 @@ def q(name):
 
 # ---------------------------------------------------------------- model
 TYPES = {
-    "string": ("text", "string", "none"),
+    "string": ("type text", "string", "none"),
     "int": ("Int64.Type", "int64", "none"),
     "num": ("type number", "double", "none"),
     "date": ("type date", "dateTime", "none"),

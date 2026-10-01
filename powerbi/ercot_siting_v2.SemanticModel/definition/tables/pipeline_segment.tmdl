@@ -39,7 +39,7 @@ table pipeline_segment
 		source =
 				let
 					Source = Sql.Database(ServerName, DatabaseName, [Query = "SELECT p.county_fips, p.operator_name, p.system_name, p.diameter_in, p.interstate, p.miles FROM fact.pipeline_segment p JOIN dim.county c ON c.county_fips = p.county_fips WHERE c.in_ercot = 1"]),
-					Typed = Table.TransformColumnTypes(Source, {{"county_fips", text},{"operator_name", text},{"system_name", text},{"diameter_in", type number},{"interstate", text},{"miles", type number}})
+					Typed = Table.TransformColumnTypes(Source, {{"county_fips", type text},{"operator_name", type text},{"system_name", type text},{"diameter_in", type number},{"interstate", type text},{"miles", type number}})
 				in
 					Typed
 

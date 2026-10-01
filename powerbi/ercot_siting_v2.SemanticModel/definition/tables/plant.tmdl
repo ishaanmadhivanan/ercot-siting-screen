@@ -55,7 +55,7 @@ table plant
 		source =
 				let
 					Source = Sql.Database(ServerName, DatabaseName, [Query = "SELECT g.county_fips, g.plant_code, g.generator_id, g.plant_name, g.technology, g.nameplate_mw, g.operating_year, g.latitude, g.longitude FROM fact.generator_capacity g JOIN dim.county c ON c.county_fips = g.county_fips WHERE c.in_ercot = 1 AND g.status_group = 'Operating' AND g.data_vintage_year = (SELECT MAX(data_vintage_year) FROM fact.generator_capacity)"]),
-					Typed = Table.TransformColumnTypes(Source, {{"county_fips", text},{"plant_code", Int64.Type},{"generator_id", text},{"plant_name", text},{"technology", text},{"nameplate_mw", type number},{"operating_year", Int64.Type},{"latitude", type number},{"longitude", type number}})
+					Typed = Table.TransformColumnTypes(Source, {{"county_fips", type text},{"plant_code", Int64.Type},{"generator_id", type text},{"plant_name", type text},{"technology", type text},{"nameplate_mw", type number},{"operating_year", Int64.Type},{"latitude", type number},{"longitude", type number}})
 				in
 					Typed
 

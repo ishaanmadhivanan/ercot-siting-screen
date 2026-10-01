@@ -59,7 +59,7 @@ table county_factor_score
 		source =
 				let
 					Source = Sql.Database(ServerName, DatabaseName, [Query = "SELECT county_fips, county_name, factor_key, factor_label, category, unit, raw_value, better_direction, score_transform, factor_score FROM rpt.county_factor_score"]),
-					Typed = Table.TransformColumnTypes(Source, {{"county_fips", text},{"county_name", text},{"factor_key", text},{"factor_label", text},{"category", text},{"unit", text},{"raw_value", type number},{"better_direction", text},{"score_transform", text},{"factor_score", type number}})
+					Typed = Table.TransformColumnTypes(Source, {{"county_fips", type text},{"county_name", type text},{"factor_key", type text},{"factor_label", type text},{"category", type text},{"unit", type text},{"raw_value", type number},{"better_direction", type text},{"score_transform", type text},{"factor_score", type number}})
 				in
 					Typed
 

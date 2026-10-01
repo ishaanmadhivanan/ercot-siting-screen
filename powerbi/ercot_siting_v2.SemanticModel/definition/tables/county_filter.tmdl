@@ -54,7 +54,7 @@ table county_filter
 		source =
 				let
 					Source = Sql.Database(ServerName, DatabaseName, [Query = "SELECT a.county_fips, MAX(CASE WHEN a.attribute_key = 'ozone_classification' THEN a.value_text END) AS ozone_class, MAX(CASE WHEN a.attribute_key = 'nox_offset_ratio' THEN a.value_num END) AS nox_offset_ratio, MAX(CASE WHEN a.attribute_key = 'nox_offset_cost_per_tpy' THEN a.value_num END) AS nox_offset_cost_per_tpy, MAX(CASE WHEN a.attribute_key = 'nox_credit_trades' THEN a.value_num END) AS nox_credit_trades, MAX(CASE WHEN a.attribute_key = 'land_parcel_coverage' THEN a.value_num END) AS land_parcel_coverage, MAX(CASE WHEN a.attribute_key = 'land_industrial_acres' THEN a.value_num END) AS land_industrial_acres, MAX(CASE WHEN a.attribute_key = 'lng_terminal_count' THEN a.value_num END) AS lng_terminal_count FROM fact.county_attribute a JOIN dim.county c ON c.county_fips = a.county_fips WHERE c.in_ercot = 1 GROUP BY a.county_fips"]),
-					Typed = Table.TransformColumnTypes(Source, {{"county_fips", text},{"ozone_class", text},{"nox_offset_ratio", type number},{"nox_offset_cost_per_tpy", type number},{"nox_credit_trades", type number},{"land_parcel_coverage", type number},{"land_industrial_acres", type number},{"lng_terminal_count", type number}})
+					Typed = Table.TransformColumnTypes(Source, {{"county_fips", type text},{"ozone_class", type text},{"nox_offset_ratio", type number},{"nox_offset_cost_per_tpy", type number},{"nox_credit_trades", type number},{"land_parcel_coverage", type number},{"land_industrial_acres", type number},{"lng_terminal_count", type number}})
 				in
 					Typed
 
