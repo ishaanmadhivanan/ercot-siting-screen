@@ -298,6 +298,27 @@ LEFT JOIN fact.county_attribute a
        ON a.county_fips = c.county_fips
       AND a.attribute_key = 'gas_gathering_miles'
 WHERE c.in_ercot = 1
+
+UNION ALL
+
+-- Factors 17-19 (Phase 4, land): parcel size and ownership, from TxGIO parcels
+-- via fact.county_attribute (scripts/load_parcels.py). Land-use codes are too
+-- patchy to score, so these use only size and owner names.
+-- QUALITY GATE: where de-duplicated parcel acres are outside 80-125% of the
+-- county's land area (partial file or overlapping parcels - 11 counties incl.
+-- Harris, Frio, Chambers) the value is NULL, i.e. missing, not zero. Donley has
+-- no parcel file. NULLs drop out of min-max scaling in rpt.county_factor_score.
+SELECT
+    c.county_fips,
+    k.factor_key,
+    CAST(CASE WHEN q.value_num BETWEEN 0.80 AND 1.25 THEN a.value_num END AS DECIMAL(18,4)) AS raw_value
+FROM dim.county c
+CROSS JOIN (VALUES ('land_large_tract_share'), ('land_owner_density'), ('land_parcels_500ac')) k (factor_key)
+LEFT JOIN fact.county_attribute a
+       ON a.county_fips = c.county_fips AND a.attribute_key = k.factor_key
+LEFT JOIN fact.county_attribute q
+       ON q.county_fips = c.county_fips AND q.attribute_key = 'land_parcel_coverage'
+WHERE c.in_ercot = 1
 ;
 GO
 
@@ -338,4 +359,16 @@ JOIN dim.county c ON c.county_fips = f.county_fips
 WHERE f.factor_key LIKE 'gas[_]pipe%' OR f.factor_key = 'gas_gathering_miles'
 GROUP BY c.county_name
 ORDER BY large_miles DESC;
+GO
+
+-- Spot check (Phase 4): land factors. Expect 183 counties with values (195 less
+-- 11 quality-gated, less Donley); Kenedy/King lowest owner density, Tarrant highest.
+SELECT factor_key,
+       COUNT(raw_value)                         AS counties_with_value,
+       COUNT(*) - COUNT(raw_value)              AS missing,
+       CAST(MIN(raw_value) AS DECIMAL(10,3))    AS min_value,
+       CAST(MAX(raw_value) AS DECIMAL(10,3))    AS max_value
+FROM rpt.county_factor
+WHERE factor_key LIKE 'land[_]%'
+GROUP BY factor_key;
 GO

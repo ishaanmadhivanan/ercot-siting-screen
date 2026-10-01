@@ -158,7 +158,36 @@ VALUES
 
 ('lng_terminals', 'LNG export terminals (names)', 'gas', 'context', 'text', 'none',
  'Hand-built list (data/seed/lng_terminals.csv)', NULL, '2026-09-30',
- 'Terminal names with status, e.g. "Golden Pass LNG (Operating); Port Arthur LNG (Under construction)".', 6);
+ 'Terminal names with status, e.g. "Golden Pass LNG (Operating); Port Arthur LNG (Under construction)".', 6),
+
+-- ---------- Phase 4: land (TxGIO StratMap Land Parcels, 2025 release) ----------
+('land_large_tract_share', 'Land in large tracts (100+ ac)', 'land', 'score', 'share 0-1', 'higher',
+ 'TxGIO StratMap Land Parcels 2025 (county appraisal districts)', 'https://geographic.texas.gov/', '2025-05-01',
+ 'Share of parcel acres in parcels of 100+ acres: room to site a plant on a single ownership. Acres recomputed in Texas Albers; shapes repeated for undivided owners counted once. Missing where parcel coverage is outside 80-125% of county land area.', 7),
+
+('land_owner_density', 'Landowners per 1,000 rural acres', 'land', 'score', 'owners per 1,000 acres', 'lower',
+ 'TxGIO StratMap Land Parcels 2025 (county appraisal districts)', 'https://geographic.texas.gov/', '2025-05-01',
+ 'Distinct owner names on parcels of 5+ acres per 1,000 acres of those parcels: how many landowners a project must deal with. Name spelling variants count separately. Missing where parcel coverage is outside 80-125%.', 7),
+
+('land_parcels_500ac', 'Parcels of 500+ acres', 'land', 'score', 'parcels', 'higher',
+ 'TxGIO StratMap Land Parcels 2025 (county appraisal districts)', 'https://geographic.texas.gov/', '2025-05-01',
+ 'Count of single parcels of 500+ acres: the supply of tracts big enough for a plant plus buffer. Missing where parcel coverage is outside 80-125%.', 7),
+
+('land_industrial_acres', 'Industrial and utility land', 'land', 'context', 'acres', 'higher',
+ 'TxGIO StratMap Land Parcels 2025, state property codes F2 and J3', 'https://geographic.texas.gov/', '2025-05-01',
+ 'Acres coded F2 (industrial real property) or J3 (electric utility): brownfield context. Only where 80%+ of parcels carry a state code (about 62 of 194 counties); codes are blank or misapplied elsewhere.', 7),
+
+('land_code_coverage', 'Parcels with a land-use code', 'land', 'context', 'share 0-1', 'none',
+ 'TxGIO StratMap Land Parcels 2025', 'https://geographic.texas.gov/', '2025-05-01',
+ 'Share of parcel records with a state land-use code. Many districts leave it blank (Wharton, Fort Bend, Travis: 0%).', 7),
+
+('land_parcel_coverage', 'Parcel coverage of county', 'land', 'context', 'ratio', 'none',
+ 'TxGIO StratMap Land Parcels 2025 vs Census land area', 'https://geographic.texas.gov/', '2025-05-01',
+ 'De-duplicated parcel acres / Census land area. Near 1.0 is complete. Harris is 0.40 (partial file); Frio 2.8 and Chambers 1.7 have overlapping parcels. Land scores are left missing outside 0.8-1.25.', 7),
+
+('land_parcel_vintage', 'Parcel data month', 'land', 'context', 'YYYYMM', 'none',
+ 'TxGIO StratMap Land Parcels 2025 (file name)', 'https://geographic.texas.gov/', NULL,
+ 'Month the appraisal district data was collected, from the TxGIO file name.', 7);
 GO
 
 -- Transform used when each score metric is put on a 0-100 scale. Matches the
@@ -168,7 +197,8 @@ SET score_transform = 'log'
 WHERE metric_key IN ('installed_mw', 'retiring_mw', 'pop_density', 'queue_congestion',
                      'aging_thermal_mw', 'gas_queue_mw',
                      'gas_pipe_miles', 'gas_pipe_large_miles', 'gas_pipe_operators',
-                     'gas_pipe_interstate_miles', 'gas_gathering_miles');
+                     'gas_pipe_interstate_miles', 'gas_gathering_miles',
+                     'land_owner_density', 'land_parcels_500ac');
 GO
 
 -- Check 1: every factor the model scores has a catalog row. Should return zero rows.
