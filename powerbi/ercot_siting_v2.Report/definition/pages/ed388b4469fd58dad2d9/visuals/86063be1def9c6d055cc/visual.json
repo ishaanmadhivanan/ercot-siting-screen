@@ -1,0 +1,98 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
+  "name": "86063be1def9c6d055cc",
+  "position": {
+    "x": 720,
+    "y": 600,
+    "z": 1003,
+    "width": 1196,
+    "height": 476,
+    "tabOrder": 1003
+  },
+  "visual": {
+    "visualType": "tableEx",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "plant"
+                    }
+                  },
+                  "Property": "plant_name"
+                }
+              },
+              "queryRef": "plant.plant_name",
+              "nativeQueryRef": "plant_name"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "plant"
+                    }
+                  },
+                  "Property": "technology"
+                }
+              },
+              "queryRef": "plant.technology",
+              "nativeQueryRef": "technology"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "plant"
+                    }
+                  },
+                  "Property": "nameplate_mw"
+                }
+              },
+              "queryRef": "plant.nameplate_mw",
+              "nativeQueryRef": "nameplate_mw"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "plant"
+                    }
+                  },
+                  "Property": "operating_year"
+                }
+              },
+              "queryRef": "plant.operating_year",
+              "nativeQueryRef": "operating_year"
+            }
+          ]
+        }
+      },
+      "sortDefinition": {
+        "sort": [
+          {
+            "field": {
+              "Column": {
+                "Expression": {
+                  "SourceRef": {
+                    "Entity": "plant"
+                  }
+                },
+                "Property": "nameplate_mw"
+              }
+            },
+            "direction": "Descending"
+          }
+        ],
+        "isDefaultSort": true
+      }
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

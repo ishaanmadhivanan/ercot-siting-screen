@@ -1,0 +1,72 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
+  "name": "fe567ca475ba0d98dbcb",
+  "position": {
+    "x": 1280,
+    "y": 570,
+    "z": 1021,
+    "width": 310,
+    "height": 114,
+    "tabOrder": 1021
+  },
+  "visual": {
+    "visualType": "slicer",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "county_filter"
+                    }
+                  },
+                  "Property": "Ozone Status"
+                }
+              },
+              "queryRef": "county_filter.Ozone Status",
+              "nativeQueryRef": "Ozone Status",
+              "active": true
+            }
+          ]
+        }
+      }
+    },
+    "objects": {
+      "data": [
+        {
+          "properties": {
+            "mode": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Basic'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true
+  },
+  "filterConfig": {
+    "filters": [
+      {
+        "name": "6834a867ed8b382d2bff",
+        "field": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "county_filter"
+              }
+            },
+            "Property": "Ozone Status"
+          }
+        },
+        "type": "Categorical"
+      }
+    ]
+  }
+}

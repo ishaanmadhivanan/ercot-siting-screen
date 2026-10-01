@@ -1,0 +1,61 @@
+table plant
+
+	column county_fips
+		dataType: string
+		summarizeBy: none
+		sourceColumn: county_fips
+
+	column plant_code
+		dataType: int64
+		summarizeBy: none
+		sourceColumn: plant_code
+
+	column generator_id
+		dataType: string
+		summarizeBy: none
+		sourceColumn: generator_id
+
+	column plant_name
+		dataType: string
+		summarizeBy: none
+		sourceColumn: plant_name
+
+	column technology
+		dataType: string
+		summarizeBy: none
+		sourceColumn: technology
+
+	column nameplate_mw
+		dataType: double
+		formatString: #,##0.0
+		summarizeBy: sum
+		sourceColumn: nameplate_mw
+
+	column operating_year
+		dataType: int64
+		summarizeBy: none
+		sourceColumn: operating_year
+
+	column latitude
+		dataType: double
+		dataCategory: Latitude
+		summarizeBy: none
+		sourceColumn: latitude
+
+	column longitude
+		dataType: double
+		dataCategory: Longitude
+		summarizeBy: none
+		sourceColumn: longitude
+
+
+
+	partition plant = m
+		mode: import
+		source =
+				let
+					Source = Sql.Database(ServerName, DatabaseName, [Query = "SELECT g.county_fips, g.plant_code, g.generator_id, g.plant_name, g.technology, g.nameplate_mw, g.operating_year, g.latitude, g.longitude FROM fact.generator_capacity g JOIN dim.county c ON c.county_fips = g.county_fips WHERE c.in_ercot = 1 AND g.status_group = 'Operating' AND g.data_vintage_year = (SELECT MAX(data_vintage_year) FROM fact.generator_capacity)"]),
+					Typed = Table.TransformColumnTypes(Source, {{"county_fips", text},{"plant_code", Int64.Type},{"generator_id", text},{"plant_name", text},{"technology", text},{"nameplate_mw", type number},{"operating_year", Int64.Type},{"latitude", type number},{"longitude", type number}})
+				in
+					Typed
+

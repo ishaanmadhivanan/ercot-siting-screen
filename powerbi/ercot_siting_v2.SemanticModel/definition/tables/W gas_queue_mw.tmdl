@@ -1,0 +1,16 @@
+table 'W gas_queue_mw'
+	isHidden
+
+	column 'Active gas queue'
+		dataType: int64
+		sourceColumn: [Value]
+		summarizeBy: none
+
+	measure 'W gas_queue_mw Value' = ```
+			SELECTEDVALUE ( 'W gas_queue_mw'[Active gas queue], 4 )
+			```
+		formatString: 0
+
+	partition 'W gas_queue_mw' = calculated
+		mode: import
+		source = GENERATESERIES ( 0, 10, 1 )

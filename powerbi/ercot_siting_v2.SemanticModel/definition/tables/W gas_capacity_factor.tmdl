@@ -1,0 +1,16 @@
+table 'W gas_capacity_factor'
+	isHidden
+
+	column 'Gas fleet capacity factor'
+		dataType: int64
+		sourceColumn: [Value]
+		summarizeBy: none
+
+	measure 'W gas_capacity_factor Value' = ```
+			SELECTEDVALUE ( 'W gas_capacity_factor'[Gas fleet capacity factor], 2 )
+			```
+		formatString: 0
+
+	partition 'W gas_capacity_factor' = calculated
+		mode: import
+		source = GENERATESERIES ( 0, 10, 1 )

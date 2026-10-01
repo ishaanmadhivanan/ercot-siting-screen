@@ -1,0 +1,15 @@
+relationship score_to_county
+	fromColumn: county_factor_score.county_fips
+	toColumn: County.county_fips
+
+relationship filter_to_county
+	fromColumn: county_filter.county_fips
+	toColumn: County.county_fips
+
+relationship pipe_to_county
+	fromColumn: pipeline_segment.county_fips
+	toColumn: County.county_fips
+
+relationship plant_to_county
+	fromColumn: plant.county_fips
+	toColumn: County.county_fips

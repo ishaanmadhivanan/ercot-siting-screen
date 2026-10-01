@@ -1,0 +1,16 @@
+table 'W gas_pipe_operators'
+	isHidden
+
+	column 'Gas pipeline operators'
+		dataType: int64
+		sourceColumn: [Value]
+		summarizeBy: none
+
+	measure 'W gas_pipe_operators Value' = ```
+			SELECTEDVALUE ( 'W gas_pipe_operators'[Gas pipeline operators], 0 )
+			```
+		formatString: 0
+
+	partition 'W gas_pipe_operators' = calculated
+		mode: import
+		source = GENERATESERIES ( 0, 10, 1 )

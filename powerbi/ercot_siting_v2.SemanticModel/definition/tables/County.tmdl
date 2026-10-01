@@ -1,0 +1,142 @@
+table County
+
+	column county_fips
+		dataType: string
+		summarizeBy: none
+		sourceColumn: county_fips
+
+	column county_name
+		dataType: string
+		summarizeBy: none
+		sourceColumn: county_name
+
+	column map_label
+		dataType: string
+		dataCategory: County
+		summarizeBy: none
+		sourceColumn: map_label
+
+	column population
+		dataType: int64
+		formatString: #,##0
+		summarizeBy: none
+		sourceColumn: population
+
+	column land_area_sqmi
+		dataType: double
+		formatString: #,##0.0
+		summarizeBy: none
+		sourceColumn: land_area_sqmi
+
+
+	/// Reads the slider for whichever factor is in the current row. Used by My Score.
+	measure 'Weight For Factor' = ```
+			SWITCH (
+			    SELECTEDVALUE ( county_factor_score[factor_key] ),
+			        "installed_mw", [W installed_mw Value],
+			        "retiring_mw", [W retiring_mw Value],
+			        "capacity_factor", [W capacity_factor Value],
+			        "generation_trend", [W generation_trend Value],
+			        "queue_congestion", [W queue_congestion Value],
+			        "queue_attrition", [W queue_attrition Value],
+			        "aging_thermal_mw", [W aging_thermal_mw Value],
+			        "gas_queue_mw", [W gas_queue_mw Value],
+			        "gas_capacity_factor", [W gas_capacity_factor Value],
+			        "pop_density", [W pop_density Value],
+			        "land_large_tract_share", [W land_large_tract_share Value],
+			        "land_owner_density", [W land_owner_density Value],
+			        "land_parcels_500ac", [W land_parcels_500ac Value],
+			        "ozone_severity", [W ozone_severity Value],
+			        "gas_pipe_miles", [W gas_pipe_miles Value],
+			        "gas_pipe_large_miles", [W gas_pipe_large_miles Value],
+			        "gas_pipe_interstate_miles", [W gas_pipe_interstate_miles Value],
+			        "gas_pipe_operators", [W gas_pipe_operators Value],
+			        "gas_gathering_miles", [W gas_gathering_miles Value],
+			        0
+			)
+			```
+		formatString: 0
+
+	/// Weighted average of the factor scores (0-100) using the sliders.
+	measure 'My Score' = ```
+			VAR f =
+			    ADDCOLUMNS (
+			        VALUES ( county_factor_score[factor_key] ),
+			        "@w", [Weight For Factor],
+			        "@s", CALCULATE ( AVERAGE ( county_factor_score[factor_score] ) )
+			    )
+			-- A positive weight rewards a high factor score; a negative weight rewards a low one.
+			-- Factors a county has no score for are left out of BOTH the top and the bottom,
+			-- so a missing value never counts as a zero.
+			VAR numer =
+			    SUMX ( f, IF ( ISBLANK ( [@s] ) || [@w] = 0, 0,
+			                   IF ( [@w] > 0, [@w] * [@s], -[@w] * ( 100 - [@s] ) ) ) )
+			VAR denom =
+			    SUMX ( f, IF ( ISBLANK ( [@s] ), 0, ABS ( [@w] ) ) )
+			RETURN
+			    DIVIDE ( numer, denom )
+			```
+		formatString: 0.0
+
+	/// 1 = best county among those currently shown.
+	measure 'My Rank' = ```
+			IF ( ISBLANK ( [My Score] ), BLANK (),
+			     RANKX ( ALLSELECTED ( County[county_name] ), [My Score], , DESC, DENSE ) )
+			```
+		formatString: 0
+
+	/// Share of your slider weight the county actually has data for. Below 100% means a factor was missing and the score is based on the rest.
+	measure 'Weight Used %' = ```
+			VAR f =
+			    ADDCOLUMNS (
+			        VALUES ( county_factor_score[factor_key] ),
+			        "@w", [Weight For Factor],
+			        "@s", CALCULATE ( AVERAGE ( county_factor_score[factor_score] ) )
+			    )
+			RETURN
+			    DIVIDE (
+			        SUMX ( f, IF ( ISBLANK ( [@s] ), 0, ABS ( [@w] ) ) ),
+			        SUMX ( f, ABS ( [@w] ) )
+			    )
+			```
+		formatString: 0%
+
+	/// 0-100 score for the single factor picked on the Single factor page.
+	measure 'Layer Score' = ```
+			IF ( HASONEVALUE ( county_factor_score[factor_label] ),
+			     AVERAGE ( county_factor_score[factor_score] ) )
+			```
+		formatString: 0.0
+
+	/// The underlying number before scaling, in the factor's own unit.
+	measure 'Layer Raw Value' = ```
+			IF ( HASONEVALUE ( county_factor_score[factor_label] ),
+			     AVERAGE ( county_factor_score[raw_value] ) )
+			```
+		formatString: #,##0.00
+
+	measure 'Layer Title' = ```
+			SELECTEDVALUE ( county_factor_score[factor_label], "Pick one factor on the left" )
+			    & IF ( HASONEVALUE ( county_factor_score[unit] ), " (" & SELECTEDVALUE ( county_factor_score[unit] ) & ")", "" )
+			```
+
+	measure 'Pipe Miles' = ```
+			SUM ( pipeline_segment[miles] )
+			```
+		formatString: #,##0.0
+
+	measure 'Plant MW' = ```
+			SUM ( plant[nameplate_mw] )
+			```
+		formatString: #,##0
+
+
+	partition County = m
+		mode: import
+		source =
+				let
+					Source = Sql.Database(ServerName, DatabaseName, [Query = "SELECT county_fips, county_name, county_name + ' County, Texas' AS map_label, population, land_area_sqmi FROM dim.county WHERE in_ercot = 1"]),
+					Typed = Table.TransformColumnTypes(Source, {{"county_fips", text},{"county_name", text},{"map_label", text},{"population", Int64.Type},{"land_area_sqmi", type number}})
+				in
+					Typed
+

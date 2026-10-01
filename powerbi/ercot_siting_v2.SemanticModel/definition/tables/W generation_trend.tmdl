@@ -1,0 +1,16 @@
+table 'W generation_trend'
+	isHidden
+
+	column 'Generation trend 2020-2024'
+		dataType: int64
+		sourceColumn: [Value]
+		summarizeBy: none
+
+	measure 'W generation_trend Value' = ```
+			SELECTEDVALUE ( 'W generation_trend'[Generation trend 2020-2024], 2 )
+			```
+		formatString: 0
+
+	partition 'W generation_trend' = calculated
+		mode: import
+		source = GENERATESERIES ( 0, 10, 1 )

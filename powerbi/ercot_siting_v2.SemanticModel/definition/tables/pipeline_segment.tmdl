@@ -1,0 +1,45 @@
+table pipeline_segment
+
+	column county_fips
+		dataType: string
+		summarizeBy: none
+		sourceColumn: county_fips
+
+	column operator_name
+		dataType: string
+		summarizeBy: none
+		sourceColumn: operator_name
+
+	column system_name
+		dataType: string
+		summarizeBy: none
+		sourceColumn: system_name
+
+	column diameter_in
+		dataType: double
+		formatString: 0.0
+		summarizeBy: none
+		sourceColumn: diameter_in
+
+	column interstate
+		dataType: string
+		summarizeBy: none
+		sourceColumn: interstate
+
+	column miles
+		dataType: double
+		formatString: #,##0.0
+		summarizeBy: sum
+		sourceColumn: miles
+
+
+
+	partition pipeline_segment = m
+		mode: import
+		source =
+				let
+					Source = Sql.Database(ServerName, DatabaseName, [Query = "SELECT p.county_fips, p.operator_name, p.system_name, p.diameter_in, p.interstate, p.miles FROM fact.pipeline_segment p JOIN dim.county c ON c.county_fips = p.county_fips WHERE c.in_ercot = 1"]),
+					Typed = Table.TransformColumnTypes(Source, {{"county_fips", text},{"operator_name", text},{"system_name", text},{"diameter_in", type number},{"interstate", text},{"miles", type number}})
+				in
+					Typed
+

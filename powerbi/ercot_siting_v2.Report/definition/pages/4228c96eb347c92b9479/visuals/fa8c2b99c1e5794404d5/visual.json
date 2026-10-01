@@ -1,0 +1,84 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
+  "name": "fa8c2b99c1e5794404d5",
+  "position": {
+    "x": 1310,
+    "y": 90,
+    "z": 1003,
+    "width": 606,
+    "height": 986,
+    "tabOrder": 1003
+  },
+  "visual": {
+    "visualType": "tableEx",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "County"
+                    }
+                  },
+                  "Property": "county_name"
+                }
+              },
+              "queryRef": "County.county_name",
+              "nativeQueryRef": "county_name"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "County"
+                    }
+                  },
+                  "Property": "Layer Raw Value"
+                }
+              },
+              "queryRef": "County.Layer Raw Value",
+              "nativeQueryRef": "Layer Raw Value"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "County"
+                    }
+                  },
+                  "Property": "Layer Score"
+                }
+              },
+              "queryRef": "County.Layer Score",
+              "nativeQueryRef": "Layer Score"
+            }
+          ]
+        }
+      },
+      "sortDefinition": {
+        "sort": [
+          {
+            "field": {
+              "Measure": {
+                "Expression": {
+                  "SourceRef": {
+                    "Entity": "County"
+                  }
+                },
+                "Property": "Layer Score"
+              }
+            },
+            "direction": "Descending"
+          }
+        ],
+        "isDefaultSort": true
+      }
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

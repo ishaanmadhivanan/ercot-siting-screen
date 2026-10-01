@@ -1,0 +1,112 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
+  "name": "c7d02eeb01e12e71a5d5",
+  "position": {
+    "x": 720,
+    "y": 90,
+    "z": 1002,
+    "width": 1196,
+    "height": 500,
+    "tabOrder": 1002
+  },
+  "visual": {
+    "visualType": "tableEx",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "pipeline_segment"
+                    }
+                  },
+                  "Property": "operator_name"
+                }
+              },
+              "queryRef": "pipeline_segment.operator_name",
+              "nativeQueryRef": "operator_name"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "pipeline_segment"
+                    }
+                  },
+                  "Property": "system_name"
+                }
+              },
+              "queryRef": "pipeline_segment.system_name",
+              "nativeQueryRef": "system_name"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "pipeline_segment"
+                    }
+                  },
+                  "Property": "diameter_in"
+                }
+              },
+              "queryRef": "pipeline_segment.diameter_in",
+              "nativeQueryRef": "diameter_in"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "pipeline_segment"
+                    }
+                  },
+                  "Property": "interstate"
+                }
+              },
+              "queryRef": "pipeline_segment.interstate",
+              "nativeQueryRef": "interstate"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "pipeline_segment"
+                    }
+                  },
+                  "Property": "miles"
+                }
+              },
+              "queryRef": "pipeline_segment.miles",
+              "nativeQueryRef": "miles"
+            }
+          ]
+        }
+      },
+      "sortDefinition": {
+        "sort": [
+          {
+            "field": {
+              "Column": {
+                "Expression": {
+                  "SourceRef": {
+                    "Entity": "pipeline_segment"
+                  }
+                },
+                "Property": "miles"
+              }
+            },
+            "direction": "Descending"
+          }
+        ],
+        "isDefaultSort": true
+      }
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

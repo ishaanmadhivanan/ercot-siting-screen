@@ -1,0 +1,65 @@
+table county_factor_score
+
+	column county_fips
+		dataType: string
+		summarizeBy: none
+		sourceColumn: county_fips
+
+	column county_name
+		dataType: string
+		summarizeBy: none
+		sourceColumn: county_name
+
+	column factor_key
+		dataType: string
+		summarizeBy: none
+		sourceColumn: factor_key
+
+	column factor_label
+		dataType: string
+		summarizeBy: none
+		sourceColumn: factor_label
+
+	column category
+		dataType: string
+		summarizeBy: none
+		sourceColumn: category
+
+	column unit
+		dataType: string
+		summarizeBy: none
+		sourceColumn: unit
+
+	column raw_value
+		dataType: double
+		formatString: #,##0.00
+		summarizeBy: none
+		sourceColumn: raw_value
+
+	column better_direction
+		dataType: string
+		summarizeBy: none
+		sourceColumn: better_direction
+
+	column score_transform
+		dataType: string
+		summarizeBy: none
+		sourceColumn: score_transform
+
+	column factor_score
+		dataType: double
+		formatString: 0.0
+		summarizeBy: none
+		sourceColumn: factor_score
+
+
+
+	partition county_factor_score = m
+		mode: import
+		source =
+				let
+					Source = Sql.Database(ServerName, DatabaseName, [Query = "SELECT county_fips, county_name, factor_key, factor_label, category, unit, raw_value, better_direction, score_transform, factor_score FROM rpt.county_factor_score"]),
+					Typed = Table.TransformColumnTypes(Source, {{"county_fips", text},{"county_name", text},{"factor_key", text},{"factor_label", text},{"category", text},{"unit", text},{"raw_value", type number},{"better_direction", text},{"score_transform", text},{"factor_score", type number}})
+				in
+					Typed
+

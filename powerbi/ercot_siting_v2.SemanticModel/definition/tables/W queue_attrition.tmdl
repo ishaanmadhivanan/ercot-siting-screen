@@ -1,0 +1,16 @@
+table 'W queue_attrition'
+	isHidden
+
+	column 'Queue attrition rate'
+		dataType: int64
+		sourceColumn: [Value]
+		summarizeBy: none
+
+	measure 'W queue_attrition Value' = ```
+			SELECTEDVALUE ( 'W queue_attrition'[Queue attrition rate], 2 )
+			```
+		formatString: 0
+
+	partition 'W queue_attrition' = calculated
+		mode: import
+		source = GENERATESERIES ( 0, 10, 1 )

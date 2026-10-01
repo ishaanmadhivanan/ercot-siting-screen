@@ -19,3 +19,7 @@ venv/
 # OS
 .DS_Store
 Thumbs.db
+
+# Power BI project local state (per-machine cache and settings)
+**/.pbi/localSettings.json
+**/.pbi/cache.abf

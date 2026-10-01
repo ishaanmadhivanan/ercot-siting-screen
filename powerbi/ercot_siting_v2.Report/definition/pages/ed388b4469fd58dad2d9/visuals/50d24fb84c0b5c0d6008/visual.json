@@ -1,0 +1,98 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
+  "name": "50d24fb84c0b5c0d6008",
+  "position": {
+    "x": 8,
+    "y": 90,
+    "z": 1001,
+    "width": 700,
+    "height": 986,
+    "tabOrder": 1001
+  },
+  "visual": {
+    "visualType": "tableEx",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "county_factor_score"
+                    }
+                  },
+                  "Property": "factor_label"
+                }
+              },
+              "queryRef": "county_factor_score.factor_label",
+              "nativeQueryRef": "factor_label"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "county_factor_score"
+                    }
+                  },
+                  "Property": "raw_value"
+                }
+              },
+              "queryRef": "county_factor_score.raw_value",
+              "nativeQueryRef": "raw_value"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "county_factor_score"
+                    }
+                  },
+                  "Property": "unit"
+                }
+              },
+              "queryRef": "county_factor_score.unit",
+              "nativeQueryRef": "unit"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "county_factor_score"
+                    }
+                  },
+                  "Property": "factor_score"
+                }
+              },
+              "queryRef": "county_factor_score.factor_score",
+              "nativeQueryRef": "factor_score"
+            }
+          ]
+        }
+      },
+      "sortDefinition": {
+        "sort": [
+          {
+            "field": {
+              "Column": {
+                "Expression": {
+                  "SourceRef": {
+                    "Entity": "county_factor_score"
+                  }
+                },
+                "Property": "factor_score"
+              }
+            },
+            "direction": "Descending"
+          }
+        ],
+        "isDefaultSort": true
+      }
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

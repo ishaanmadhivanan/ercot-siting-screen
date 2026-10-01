@@ -1,0 +1,142 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
+  "name": "90cfaea400a16d2638f0",
+  "position": {
+    "x": 400,
+    "y": 90,
+    "z": 1002,
+    "width": 900,
+    "height": 986,
+    "tabOrder": 1002
+  },
+  "visual": {
+    "visualType": "filledMap",
+    "query": {
+      "queryState": {
+        "Category": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "County"
+                    }
+                  },
+                  "Property": "map_label"
+                }
+              },
+              "queryRef": "County.map_label",
+              "nativeQueryRef": "map_label",
+              "active": true
+            }
+          ]
+        },
+        "Tooltips": {
+          "projections": [
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "County"
+                    }
+                  },
+                  "Property": "Layer Raw Value"
+                }
+              },
+              "queryRef": "County.Layer Raw Value",
+              "nativeQueryRef": "Layer Raw Value"
+            }
+          ]
+        }
+      }
+    },
+    "objects": {
+      "dataPoint": [
+        {
+          "properties": {
+            "fill": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "FillRule": {
+                      "Input": {
+                        "Measure": {
+                          "Expression": {
+                            "SourceRef": {
+                              "Entity": "County"
+                            }
+                          },
+                          "Property": "Layer Score"
+                        }
+                      },
+                      "FillRule": {
+                        "linearGradient2": {
+                          "min": {
+                            "color": {
+                              "Literal": {
+                                "Value": "'#E3EEF9'"
+                              }
+                            }
+                          },
+                          "max": {
+                            "color": {
+                              "Literal": {
+                                "Value": "'#08519C'"
+                              }
+                            }
+                          },
+                          "nullColoringStrategy": {
+                            "strategy": {
+                              "Literal": {
+                                "Value": "'specificColor'"
+                              }
+                            },
+                            "color": {
+                              "Literal": {
+                                "Value": "'#D9D9D9'"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "selector": {
+            "data": [
+              {
+                "dataViewWildcard": {
+                  "matchingOption": 1
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true
+  },
+  "filterConfig": {
+    "filters": [
+      {
+        "name": "f0e30220a0f53ff26bf2",
+        "field": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "County"
+              }
+            },
+            "Property": "map_label"
+          }
+        },
+        "type": "Categorical"
+      }
+    ]
+  }
+}

@@ -1,0 +1,154 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
+  "name": "bffe53ad0b7611c52833",
+  "position": {
+    "x": 320,
+    "y": 4,
+    "z": 1001,
+    "width": 1596,
+    "height": 1072,
+    "tabOrder": 1001
+  },
+  "visual": {
+    "visualType": "tableEx",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "metric"
+                    }
+                  },
+                  "Property": "label"
+                }
+              },
+              "queryRef": "metric.label",
+              "nativeQueryRef": "label"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "metric"
+                    }
+                  },
+                  "Property": "category"
+                }
+              },
+              "queryRef": "metric.category",
+              "nativeQueryRef": "category"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "metric"
+                    }
+                  },
+                  "Property": "metric_type"
+                }
+              },
+              "queryRef": "metric.metric_type",
+              "nativeQueryRef": "metric_type"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "metric"
+                    }
+                  },
+                  "Property": "unit"
+                }
+              },
+              "queryRef": "metric.unit",
+              "nativeQueryRef": "unit"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "metric"
+                    }
+                  },
+                  "Property": "better_direction"
+                }
+              },
+              "queryRef": "metric.better_direction",
+              "nativeQueryRef": "better_direction"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "metric"
+                    }
+                  },
+                  "Property": "source_name"
+                }
+              },
+              "queryRef": "metric.source_name",
+              "nativeQueryRef": "source_name"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "metric"
+                    }
+                  },
+                  "Property": "data_date"
+                }
+              },
+              "queryRef": "metric.data_date",
+              "nativeQueryRef": "data_date"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "metric"
+                    }
+                  },
+                  "Property": "caveat"
+                }
+              },
+              "queryRef": "metric.caveat",
+              "nativeQueryRef": "caveat"
+            }
+          ]
+        }
+      },
+      "sortDefinition": {
+        "sort": [
+          {
+            "field": {
+              "Column": {
+                "Expression": {
+                  "SourceRef": {
+                    "Entity": "metric"
+                  }
+                },
+                "Property": "category"
+              }
+            },
+            "direction": "Ascending"
+          }
+        ],
+        "isDefaultSort": true
+      }
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

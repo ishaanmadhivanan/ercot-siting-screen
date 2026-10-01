@@ -1,0 +1,38 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
+  "name": "42a9900d10f7a2b3da86",
+  "position": {
+    "x": 400,
+    "y": 4,
+    "z": 1001,
+    "width": 1516,
+    "height": 80,
+    "tabOrder": 1001
+  },
+  "visual": {
+    "visualType": "card",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "County"
+                    }
+                  },
+                  "Property": "Layer Title"
+                }
+              },
+              "queryRef": "County.Layer Title",
+              "nativeQueryRef": "Layer Title"
+            }
+          ]
+        }
+      }
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

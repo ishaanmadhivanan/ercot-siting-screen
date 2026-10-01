@@ -1,0 +1,58 @@
+table metric
+
+	column metric_key
+		dataType: string
+		summarizeBy: none
+		sourceColumn: metric_key
+
+	column label
+		dataType: string
+		summarizeBy: none
+		sourceColumn: label
+
+	column category
+		dataType: string
+		summarizeBy: none
+		sourceColumn: category
+
+	column metric_type
+		dataType: string
+		summarizeBy: none
+		sourceColumn: metric_type
+
+	column unit
+		dataType: string
+		summarizeBy: none
+		sourceColumn: unit
+
+	column better_direction
+		dataType: string
+		summarizeBy: none
+		sourceColumn: better_direction
+
+	column source_name
+		dataType: string
+		summarizeBy: none
+		sourceColumn: source_name
+
+	column data_date
+		dataType: dateTime
+		summarizeBy: none
+		sourceColumn: data_date
+
+	column caveat
+		dataType: string
+		summarizeBy: none
+		sourceColumn: caveat
+
+
+
+	partition metric = m
+		mode: import
+		source =
+				let
+					Source = Sql.Database(ServerName, DatabaseName, [Query = "SELECT metric_key, label, category, metric_type, unit, better_direction, source_name, data_date, caveat FROM dim.metric"]),
+					Typed = Table.TransformColumnTypes(Source, {{"metric_key", text},{"label", text},{"category", text},{"metric_type", text},{"unit", text},{"better_direction", text},{"source_name", text},{"data_date", type date},{"caveat", text}})
+				in
+					Typed
+

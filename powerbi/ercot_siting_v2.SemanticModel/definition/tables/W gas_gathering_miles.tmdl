@@ -1,0 +1,16 @@
+table 'W gas_gathering_miles'
+	isHidden
+
+	column 'Gas gathering pipe'
+		dataType: int64
+		sourceColumn: [Value]
+		summarizeBy: none
+
+	measure 'W gas_gathering_miles Value' = ```
+			SELECTEDVALUE ( 'W gas_gathering_miles'[Gas gathering pipe], 0 )
+			```
+		formatString: 0
+
+	partition 'W gas_gathering_miles' = calculated
+		mode: import
+		source = GENERATESERIES ( 0, 10, 1 )

@@ -1,0 +1,16 @@
+table 'W capacity_factor'
+	isHidden
+
+	column 'Realised capacity factor'
+		dataType: int64
+		sourceColumn: [Value]
+		summarizeBy: none
+
+	measure 'W capacity_factor Value' = ```
+			SELECTEDVALUE ( 'W capacity_factor'[Realised capacity factor], 0 )
+			```
+		formatString: 0
+
+	partition 'W capacity_factor' = calculated
+		mode: import
+		source = GENERATESERIES ( 0, 10, 1 )

@@ -1,0 +1,72 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
+  "name": "69eca536f635211dca69",
+  "position": {
+    "x": 1600,
+    "y": 570,
+    "z": 1022,
+    "width": 316,
+    "height": 114,
+    "tabOrder": 1022
+  },
+  "visual": {
+    "visualType": "slicer",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "county_filter"
+                    }
+                  },
+                  "Property": "nox_offset_cost_per_tpy"
+                }
+              },
+              "queryRef": "county_filter.nox_offset_cost_per_tpy",
+              "nativeQueryRef": "nox_offset_cost_per_tpy",
+              "active": true
+            }
+          ]
+        }
+      }
+    },
+    "objects": {
+      "data": [
+        {
+          "properties": {
+            "mode": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Between'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true
+  },
+  "filterConfig": {
+    "filters": [
+      {
+        "name": "1d0345868649b68cb61d",
+        "field": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "county_filter"
+              }
+            },
+            "Property": "nox_offset_cost_per_tpy"
+          }
+        },
+        "type": "Categorical"
+      }
+    ]
+  }
+}

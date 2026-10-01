@@ -1,0 +1,5 @@
+expression ServerName = "localhost\SQLEXPRESS" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]
+	lineageTag: 5a1e0c3e-0001-4a00-9000-000000000001
+
+expression DatabaseName = "ErcotSiting" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]
+	lineageTag: 5a1e0c3e-0001-4a00-9000-000000000002
