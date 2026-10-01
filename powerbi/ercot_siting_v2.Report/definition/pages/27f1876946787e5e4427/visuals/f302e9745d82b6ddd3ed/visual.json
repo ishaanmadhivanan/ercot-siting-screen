@@ -76,13 +76,13 @@
                 "Column": {
                   "Expression": {
                     "SourceRef": {
-                      "Entity": "county_filter"
+                      "Entity": "County"
                     }
                   },
                   "Property": "ozone_class"
                 }
               },
-              "queryRef": "county_filter.ozone_class",
+              "queryRef": "County.ozone_class",
               "nativeQueryRef": "ozone_class"
             },
             {
@@ -90,13 +90,13 @@
                 "Column": {
                   "Expression": {
                     "SourceRef": {
-                      "Entity": "county_filter"
+                      "Entity": "County"
                     }
                   },
                   "Property": "nox_offset_cost_per_tpy"
                 }
               },
-              "queryRef": "county_filter.nox_offset_cost_per_tpy",
+              "queryRef": "County.nox_offset_cost_per_tpy",
               "nativeQueryRef": "nox_offset_cost_per_tpy"
             }
           ]

@@ -1,6 +1,6 @@
 {
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
-  "name": "69eca536f635211dca69",
+  "name": "47e2b9a16699080e5914",
   "position": {
     "x": 1600,
     "y": 570,
@@ -20,13 +20,13 @@
                 "Column": {
                   "Expression": {
                     "SourceRef": {
-                      "Entity": "county_filter"
+                      "Entity": "County"
                     }
                   },
                   "Property": "nox_offset_cost_per_tpy"
                 }
               },
-              "queryRef": "county_filter.nox_offset_cost_per_tpy",
+              "queryRef": "County.nox_offset_cost_per_tpy",
               "nativeQueryRef": "nox_offset_cost_per_tpy",
               "active": true
             }
@@ -54,12 +54,12 @@
   "filterConfig": {
     "filters": [
       {
-        "name": "1d0345868649b68cb61d",
+        "name": "e3508be0ee19b3d758a4",
         "field": {
           "Column": {
             "Expression": {
               "SourceRef": {
-                "Entity": "county_filter"
+                "Entity": "County"
               }
             },
             "Property": "nox_offset_cost_per_tpy"

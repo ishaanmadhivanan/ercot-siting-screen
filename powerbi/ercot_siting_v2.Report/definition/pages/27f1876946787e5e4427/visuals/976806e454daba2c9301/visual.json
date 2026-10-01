@@ -1,6 +1,6 @@
 {
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
-  "name": "fe567ca475ba0d98dbcb",
+  "name": "976806e454daba2c9301",
   "position": {
     "x": 1280,
     "y": 570,
@@ -20,13 +20,13 @@
                 "Column": {
                   "Expression": {
                     "SourceRef": {
-                      "Entity": "county_filter"
+                      "Entity": "County"
                     }
                   },
                   "Property": "Ozone Status"
                 }
               },
-              "queryRef": "county_filter.Ozone Status",
+              "queryRef": "County.Ozone Status",
               "nativeQueryRef": "Ozone Status",
               "active": true
             }
@@ -54,12 +54,12 @@
   "filterConfig": {
     "filters": [
       {
-        "name": "6834a867ed8b382d2bff",
+        "name": "85479d6f6b6d05362453",
         "field": {
           "Column": {
             "Expression": {
               "SourceRef": {
-                "Entity": "county_filter"
+                "Entity": "County"
               }
             },
             "Property": "Ozone Status"

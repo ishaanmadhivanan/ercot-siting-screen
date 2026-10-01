@@ -5,7 +5,6 @@ model Model
 
 ref table County
 ref table county_factor_score
-ref table county_filter
 ref table pipeline_segment
 ref table plant
 ref table metric

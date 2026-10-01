@@ -28,6 +28,48 @@ table County
 		summarizeBy: none
 		sourceColumn: land_area_sqmi
 
+	column ozone_class
+		dataType: string
+		summarizeBy: none
+		sourceColumn: ozone_class
+
+	column nox_offset_ratio
+		dataType: double
+		formatString: 0.0
+		summarizeBy: none
+		sourceColumn: nox_offset_ratio
+
+	column nox_offset_cost_per_tpy
+		dataType: double
+		formatString: $#,##0
+		summarizeBy: none
+		sourceColumn: nox_offset_cost_per_tpy
+
+	column nox_credit_trades
+		dataType: double
+		summarizeBy: none
+		sourceColumn: nox_credit_trades
+
+	column land_parcel_coverage
+		dataType: double
+		formatString: 0.00
+		summarizeBy: none
+		sourceColumn: land_parcel_coverage
+
+	column land_industrial_acres
+		dataType: double
+		summarizeBy: none
+		sourceColumn: land_industrial_acres
+
+	column lng_terminal_count
+		dataType: double
+		summarizeBy: none
+		sourceColumn: lng_terminal_count
+
+	column 'Ozone Status' = IF ( County[ozone_class] = "Attainment", "Attainment", "Nonattainment" )
+		dataType: string
+		summarizeBy: none
+
 
 	/// Reads the slider for whichever factor is in the current row. Used by My Score.
 	measure 'Weight For Factor' = ```
@@ -135,8 +177,8 @@ table County
 		mode: import
 		source =
 				let
-					Source = Sql.Database(ServerName, DatabaseName, [Query = "SELECT county_fips, county_name, county_name + ' County, Texas' AS map_label, population, land_area_sqmi FROM dim.county WHERE in_ercot = 1"]),
-					Typed = Table.TransformColumnTypes(Source, {{"county_fips", type text},{"county_name", type text},{"map_label", type text},{"population", Int64.Type},{"land_area_sqmi", type number}})
+					Source = Sql.Database(ServerName, DatabaseName, [Query = "SELECT c.county_fips, c.county_name, c.county_name + ' County, Texas' AS map_label, c.population, c.land_area_sqmi, a.ozone_class, a.nox_offset_ratio, a.nox_offset_cost_per_tpy, a.nox_credit_trades, a.land_parcel_coverage, a.land_industrial_acres, a.lng_terminal_count FROM dim.county c LEFT JOIN (SELECT county_fips, MAX(CASE WHEN attribute_key = 'ozone_classification' THEN value_text END) AS ozone_class, MAX(CASE WHEN attribute_key = 'nox_offset_ratio' THEN value_num END) AS nox_offset_ratio, MAX(CASE WHEN attribute_key = 'nox_offset_cost_per_tpy' THEN value_num END) AS nox_offset_cost_per_tpy, MAX(CASE WHEN attribute_key = 'nox_credit_trades' THEN value_num END) AS nox_credit_trades, MAX(CASE WHEN attribute_key = 'land_parcel_coverage' THEN value_num END) AS land_parcel_coverage, MAX(CASE WHEN attribute_key = 'land_industrial_acres' THEN value_num END) AS land_industrial_acres, MAX(CASE WHEN attribute_key = 'lng_terminal_count' THEN value_num END) AS lng_terminal_count FROM fact.county_attribute GROUP BY county_fips) a ON a.county_fips = c.county_fips WHERE c.in_ercot = 1"]),
+					Typed = Table.TransformColumnTypes(Source, {{"county_fips", type text},{"county_name", type text},{"map_label", type text},{"population", Int64.Type},{"land_area_sqmi", type number},{"ozone_class", type text},{"nox_offset_ratio", type number},{"nox_offset_cost_per_tpy", type number},{"nox_credit_trades", type number},{"land_parcel_coverage", type number},{"land_industrial_acres", type number},{"lng_terminal_count", type number}})
 				in
 					Typed
 

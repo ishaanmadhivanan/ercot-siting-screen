@@ -95,10 +95,26 @@ TYPES = {
 # name -> list of (col, kind, extra) ; SQL is one line on purpose.
 TABLES = {
     "County": dict(
-        sql="SELECT county_fips, county_name, county_name + ' County, Texas' AS map_label, "
-            "population, land_area_sqmi FROM dim.county WHERE in_ercot = 1",
+        sql="SELECT c.county_fips, c.county_name, c.county_name + ' County, Texas' AS map_label, "
+            "c.population, c.land_area_sqmi, "
+            "a.ozone_class, a.nox_offset_ratio, a.nox_offset_cost_per_tpy, a.nox_credit_trades, "
+            "a.land_parcel_coverage, a.land_industrial_acres, a.lng_terminal_count "
+            "FROM dim.county c LEFT JOIN ("
+            "SELECT county_fips, "
+            "MAX(CASE WHEN attribute_key = 'ozone_classification' THEN value_text END) AS ozone_class, "
+            "MAX(CASE WHEN attribute_key = 'nox_offset_ratio' THEN value_num END) AS nox_offset_ratio, "
+            "MAX(CASE WHEN attribute_key = 'nox_offset_cost_per_tpy' THEN value_num END) AS nox_offset_cost_per_tpy, "
+            "MAX(CASE WHEN attribute_key = 'nox_credit_trades' THEN value_num END) AS nox_credit_trades, "
+            "MAX(CASE WHEN attribute_key = 'land_parcel_coverage' THEN value_num END) AS land_parcel_coverage, "
+            "MAX(CASE WHEN attribute_key = 'land_industrial_acres' THEN value_num END) AS land_industrial_acres, "
+            "MAX(CASE WHEN attribute_key = 'lng_terminal_count' THEN value_num END) AS lng_terminal_count "
+            "FROM fact.county_attribute GROUP BY county_fips) a ON a.county_fips = c.county_fips "
+            "WHERE c.in_ercot = 1",
         cols=[("county_fips", "string"), ("county_name", "string"), ("map_label", "string"),
-              ("population", "int"), ("land_area_sqmi", "num")],
+              ("population", "int"), ("land_area_sqmi", "num"), ("ozone_class", "string"),
+              ("nox_offset_ratio", "num"), ("nox_offset_cost_per_tpy", "num"),
+              ("nox_credit_trades", "num"), ("land_parcel_coverage", "num"),
+              ("land_industrial_acres", "num"), ("lng_terminal_count", "num")],
     ),
     "county_factor_score": dict(
         sql="SELECT county_fips, county_name, factor_key, factor_label, category, unit, "
@@ -107,22 +123,6 @@ TABLES = {
               ("factor_label", "string"), ("category", "string"), ("unit", "string"),
               ("raw_value", "num"), ("better_direction", "string"), ("score_transform", "string"),
               ("factor_score", "num")],
-    ),
-    "county_filter": dict(
-        sql="SELECT a.county_fips, "
-            "MAX(CASE WHEN a.attribute_key = 'ozone_classification' THEN a.value_text END) AS ozone_class, "
-            "MAX(CASE WHEN a.attribute_key = 'nox_offset_ratio' THEN a.value_num END) AS nox_offset_ratio, "
-            "MAX(CASE WHEN a.attribute_key = 'nox_offset_cost_per_tpy' THEN a.value_num END) AS nox_offset_cost_per_tpy, "
-            "MAX(CASE WHEN a.attribute_key = 'nox_credit_trades' THEN a.value_num END) AS nox_credit_trades, "
-            "MAX(CASE WHEN a.attribute_key = 'land_parcel_coverage' THEN a.value_num END) AS land_parcel_coverage, "
-            "MAX(CASE WHEN a.attribute_key = 'land_industrial_acres' THEN a.value_num END) AS land_industrial_acres, "
-            "MAX(CASE WHEN a.attribute_key = 'lng_terminal_count' THEN a.value_num END) AS lng_terminal_count "
-            "FROM fact.county_attribute a JOIN dim.county c ON c.county_fips = a.county_fips "
-            "WHERE c.in_ercot = 1 GROUP BY a.county_fips",
-        cols=[("county_fips", "string"), ("ozone_class", "string"), ("nox_offset_ratio", "num"),
-              ("nox_offset_cost_per_tpy", "num"), ("nox_credit_trades", "num"),
-              ("land_parcel_coverage", "num"), ("land_industrial_acres", "num"),
-              ("lng_terminal_count", "num")],
     ),
     "pipeline_segment": dict(
         sql="SELECT p.county_fips, p.operator_name, p.system_name, p.diameter_in, p.interstate, p.miles "
@@ -296,8 +296,8 @@ def write_model():
         extra_cols, extra_meas = "", ""
         if name == "County":
             extra_meas = county_measures()
-        if name == "county_filter":
-            extra_cols = ("\tcolumn 'Ozone Status' = IF ( county_filter[ozone_class] = \"Attainment\", \"Attainment\", \"Nonattainment\" )\n"
+        if name == "County":
+            extra_cols = ("\tcolumn 'Ozone Status' = IF ( County[ozone_class] = \"Attainment\", \"Attainment\", \"Nonattainment\" )\n"
                           "\t\tdataType: string\n\t\tsummarizeBy: none\n\n")
         (SM / "definition" / "tables" / f"{name}.tmdl").write_text(
             write_table(name, spec, extra_cols, extra_meas))
@@ -314,7 +314,6 @@ def write_model():
 
     rels = [
         ("score_to_county", "county_factor_score.county_fips", "County.county_fips"),
-        ("filter_to_county", "county_filter.county_fips", "County.county_fips"),
         ("pipe_to_county", "pipeline_segment.county_fips", "County.county_fips"),
         ("plant_to_county", "plant.county_fips", "County.county_fips"),
     ]
@@ -497,12 +496,12 @@ def write_report():
                          [(mea("County", "My Rank"), "County", "My Rank"),
                           (mea("County", "Weight Used %"), "County", "Weight Used %")])); z += 1
     vs.append(top_bar(P1, pos(1280, 4, 636, 560, z))); z += 1
-    vs.append(slicer(P1, "county_filter", "Ozone Status", pos(1280, 570, 310, 114, z), "Basic")); z += 1
-    vs.append(slicer(P1, "county_filter", "nox_offset_cost_per_tpy", pos(1600, 570, 316, 114, z), "Between")); z += 1
+    vs.append(slicer(P1, "County", "Ozone Status", pos(1280, 570, 310, 114, z), "Basic")); z += 1
+    vs.append(slicer(P1, "County", "nox_offset_cost_per_tpy", pos(1600, 570, 316, 114, z), "Between")); z += 1
     vs.append(table_visual(P1, "rank", pos(410, 692, 1506, 384, z), [
         ("c", "County", "county_name"), ("m", "County", "My Score"), ("m", "County", "My Rank"),
-        ("m", "County", "Weight Used %"), ("c", "county_filter", "ozone_class"),
-        ("c", "county_filter", "nox_offset_cost_per_tpy")], ("m", "County", "My Score", "Descending")))
+        ("m", "County", "Weight Used %"), ("c", "County", "ozone_class"),
+        ("c", "County", "nox_offset_cost_per_tpy")], ("m", "County", "My Score", "Descending")))
     write_page(P1, P1, "Score map", vs)
 
     # ---- page 2: one factor at a time
