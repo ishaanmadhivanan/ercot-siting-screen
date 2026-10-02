@@ -1,0 +1,16 @@
+table 'W gas'
+	isHidden
+
+	column 'Gas supply'
+		dataType: int64
+		sourceColumn: [Value]
+		summarizeBy: none
+
+	measure 'W gas Value' = ```
+			SELECTEDVALUE ( 'W gas'[Gas supply], 5 )
+			```
+		formatString: 0
+
+	partition 'W gas' = calculated
+		mode: import
+		source = GENERATESERIES ( 0, 10, 1 )

@@ -2,6 +2,7 @@ table county_factor_score
 
 	column county_fips
 		dataType: string
+		isHidden
 		summarizeBy: none
 		sourceColumn: county_fips
 
@@ -12,6 +13,7 @@ table county_factor_score
 
 	column factor_key
 		dataType: string
+		isHidden
 		summarizeBy: none
 		sourceColumn: factor_key
 
@@ -22,8 +24,14 @@ table county_factor_score
 
 	column category
 		dataType: string
+		isHidden
 		summarizeBy: none
 		sourceColumn: category
+
+	column pillar
+		dataType: string
+		summarizeBy: none
+		sourceColumn: pillar
 
 	column unit
 		dataType: string
@@ -38,17 +46,19 @@ table county_factor_score
 
 	column better_direction
 		dataType: string
+		isHidden
 		summarizeBy: none
 		sourceColumn: better_direction
 
 	column score_transform
 		dataType: string
+		isHidden
 		summarizeBy: none
 		sourceColumn: score_transform
 
 	column factor_score
 		dataType: double
-		formatString: 0.0
+		formatString: 0
 		summarizeBy: none
 		sourceColumn: factor_score
 
@@ -58,8 +68,8 @@ table county_factor_score
 		mode: import
 		source =
 				let
-					Source = Sql.Database(ServerName, DatabaseName, [Query = "SELECT county_fips, county_name, factor_key, factor_label, category, unit, raw_value, better_direction, score_transform, factor_score FROM rpt.county_factor_score"]),
-					Typed = Table.TransformColumnTypes(Source, {{"county_fips", type text},{"county_name", type text},{"factor_key", type text},{"factor_label", type text},{"category", type text},{"unit", type text},{"raw_value", type number},{"better_direction", type text},{"score_transform", type text},{"factor_score", type number}})
+					Source = Sql.Database(ServerName, DatabaseName, [Query = "SELECT county_fips, county_name, factor_key, factor_label, category, pillar, unit, raw_value, better_direction, score_transform, factor_score FROM rpt.county_factor_score"]),
+					Typed = Table.TransformColumnTypes(Source, {{"county_fips", type text},{"county_name", type text},{"factor_key", type text},{"factor_label", type text},{"category", type text},{"pillar", type text},{"unit", type text},{"raw_value", type number},{"better_direction", type text},{"score_transform", type text},{"factor_score", type number}})
 				in
 					Typed
 

@@ -23,11 +23,11 @@
                       "Entity": "metric"
                     }
                   },
-                  "Property": "label"
+                  "Property": "pillar"
                 }
               },
-              "queryRef": "metric.label",
-              "nativeQueryRef": "label"
+              "queryRef": "metric.pillar",
+              "nativeQueryRef": "pillar"
             },
             {
               "field": {
@@ -37,11 +37,11 @@
                       "Entity": "metric"
                     }
                   },
-                  "Property": "category"
+                  "Property": "label"
                 }
               },
-              "queryRef": "metric.category",
-              "nativeQueryRef": "category"
+              "queryRef": "metric.label",
+              "nativeQueryRef": "label"
             },
             {
               "field": {
@@ -140,7 +140,7 @@
                     "Entity": "metric"
                   }
                 },
-                "Property": "category"
+                "Property": "pillar"
               }
             },
             "direction": "Ascending"

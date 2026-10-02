@@ -1,0 +1,16 @@
+table 'W air'
+	isHidden
+
+	column 'Air permit'
+		dataType: int64
+		sourceColumn: [Value]
+		summarizeBy: none
+
+	measure 'W air Value' = ```
+			SELECTEDVALUE ( 'W air'[Air permit], 5 )
+			```
+		formatString: 0
+
+	partition 'W air' = calculated
+		mode: import
+		source = GENERATESERIES ( 0, 10, 1 )

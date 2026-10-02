@@ -1,0 +1,36 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
+  "name": "c00534547684c3e7368d",
+  "position": {
+    "x": 1320,
+    "y": 994,
+    "z": 1014,
+    "width": 596,
+    "height": 82,
+    "tabOrder": 1014
+  },
+  "visual": {
+    "visualType": "textbox",
+    "drillFilterOtherVisuals": true,
+    "objects": {
+      "general": [
+        {
+          "properties": {
+            "paragraphs": [
+              {
+                "textRuns": [
+                  {
+                    "value": "Data as of: EPA Green Book Aug 2026; ERCOT interconnection queue Aug 2026; TxGIO parcels 2025; RRC pipelines Sep 30 2026; EIA-860/923 2024.",
+                    "textStyle": {
+                      "fontSize": "10pt"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    }
+  }
+}

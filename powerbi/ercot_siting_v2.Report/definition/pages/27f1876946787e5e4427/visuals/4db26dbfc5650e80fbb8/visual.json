@@ -1,0 +1,87 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
+  "name": "4db26dbfc5650e80fbb8",
+  "position": {
+    "x": 8,
+    "y": 408,
+    "z": 1006,
+    "width": 395,
+    "height": 668,
+    "tabOrder": 1006
+  },
+  "visual": {
+    "visualType": "slicer",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "county_factor_score"
+                    }
+                  },
+                  "Property": "pillar"
+                }
+              },
+              "queryRef": "county_factor_score.pillar",
+              "nativeQueryRef": "pillar",
+              "active": true
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "county_factor_score"
+                    }
+                  },
+                  "Property": "factor_label"
+                }
+              },
+              "queryRef": "county_factor_score.factor_label",
+              "nativeQueryRef": "factor_label",
+              "active": true
+            }
+          ]
+        }
+      }
+    },
+    "objects": {
+      "data": [
+        {
+          "properties": {
+            "mode": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Basic'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true
+  },
+  "filterConfig": {
+    "filters": [
+      {
+        "name": "6463ccb3d528f3a48c58",
+        "field": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "county_factor_score"
+              }
+            },
+            "Property": "factor_label"
+          }
+        },
+        "type": "Categorical"
+      }
+    ]
+  }
+}

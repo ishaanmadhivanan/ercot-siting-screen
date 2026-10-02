@@ -36,19 +36,8 @@ GROUP BY c.county_fips
 
 UNION ALL
 
--- Factor 2 (Stage 1): capacity with a planned retirement on or before 2030, all fuels.
-SELECT
-    c.county_fips,
-    'retiring_mw' AS factor_key,
-    CAST(ISNULL(SUM(CASE WHEN f.planned_retire_year IS NOT NULL
-                          AND f.planned_retire_year <= 2030
-                         THEN f.nameplate_mw END), 0) AS DECIMAL(18,4)) AS raw_value
-FROM dim.county c
-LEFT JOIN fact.generator_capacity f ON f.county_fips = c.county_fips
-WHERE c.in_ercot = 1
-GROUP BY c.county_fips
-
-UNION ALL
+-- (Former factor 2, retiring_mw, was removed in Phase 5: nonzero only in Bexar,
+-- and superseded by aging_thermal_mw below.)
 
 -- Factor 3 (Stage 1b): population density, people per square mile.
 SELECT

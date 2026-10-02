@@ -1,0 +1,16 @@
+table 'W community'
+	isHidden
+
+	column Community
+		dataType: int64
+		sourceColumn: [Value]
+		summarizeBy: none
+
+	measure 'W community Value' = ```
+			SELECTEDVALUE ( 'W community'[Community], 5 )
+			```
+		formatString: 0
+
+	partition 'W community' = calculated
+		mode: import
+		source = GENERATESERIES ( 0, 10, 1 )

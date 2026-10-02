@@ -2,6 +2,7 @@ table pipeline_segment
 
 	column county_fips
 		dataType: string
+		isHidden
 		summarizeBy: none
 		sourceColumn: county_fips
 

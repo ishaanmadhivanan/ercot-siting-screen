@@ -2,6 +2,7 @@ table County
 
 	column county_fips
 		dataType: string
+		isHidden
 		summarizeBy: none
 		sourceColumn: county_fips
 
@@ -13,6 +14,7 @@ table County
 	column map_label
 		dataType: string
 		dataCategory: County
+		isHidden
 		summarizeBy: none
 		sourceColumn: map_label
 
@@ -71,54 +73,43 @@ table County
 		summarizeBy: none
 
 
-	/// Reads the slider for whichever factor is in the current row. Used by My Score.
-	measure 'Weight For Factor' = ```
+	/// Reads the slider for whichever pillar is in the current row. Used by My Score.
+	measure 'Weight For Pillar' = ```
 			SWITCH (
-			    SELECTEDVALUE ( county_factor_score[factor_key] ),
-			        "installed_mw", [W installed_mw Value],
-			        "retiring_mw", [W retiring_mw Value],
-			        "capacity_factor", [W capacity_factor Value],
-			        "generation_trend", [W generation_trend Value],
-			        "queue_congestion", [W queue_congestion Value],
-			        "queue_attrition", [W queue_attrition Value],
-			        "aging_thermal_mw", [W aging_thermal_mw Value],
-			        "gas_queue_mw", [W gas_queue_mw Value],
-			        "gas_capacity_factor", [W gas_capacity_factor Value],
-			        "pop_density", [W pop_density Value],
-			        "land_large_tract_share", [W land_large_tract_share Value],
-			        "land_owner_density", [W land_owner_density Value],
-			        "land_parcels_500ac", [W land_parcels_500ac Value],
-			        "ozone_severity", [W ozone_severity Value],
-			        "gas_pipe_miles", [W gas_pipe_miles Value],
-			        "gas_pipe_large_miles", [W gas_pipe_large_miles Value],
-			        "gas_pipe_interstate_miles", [W gas_pipe_interstate_miles Value],
-			        "gas_pipe_operators", [W gas_pipe_operators Value],
-			        "gas_gathering_miles", [W gas_gathering_miles Value],
+			    SELECTEDVALUE ( county_factor_score[pillar] ),
+			        "Gas supply", [W gas Value],
+			        "Grid connection", [W grid Value],
+			        "Site control", [W site Value],
+			        "Air permit", [W air Value],
+			        "Community", [W community Value],
 			        0
 			)
 			```
 		formatString: 0
+		isHidden
 
-	/// Weighted average of the factor scores (0-100) using the sliders.
+	/// Average of the switched-on components that have a value, 0-100. Use with the pillar in the row or axis.
+	measure 'Pillar Score' = ```
+			AVERAGE ( county_factor_score[factor_score] )
+			```
+		formatString: 0
+
+	/// Pillar scores weighted by the pillar sliders (0-100).
 	measure 'My Score' = ```
-			VAR f =
+			VAR p =
 			    ADDCOLUMNS (
-			        VALUES ( county_factor_score[factor_key] ),
-			        "@w", [Weight For Factor],
+			        ALLSELECTED ( county_factor_score[pillar] ),
+			        "@w", [Weight For Pillar],
 			        "@s", CALCULATE ( AVERAGE ( county_factor_score[factor_score] ) )
 			    )
-			-- A positive weight rewards a high factor score; a negative weight rewards a low one.
-			-- Factors a county has no score for are left out of BOTH the top and the bottom,
-			-- so a missing value never counts as a zero.
-			VAR numer =
-			    SUMX ( f, IF ( ISBLANK ( [@s] ) || [@w] = 0, 0,
-			                   IF ( [@w] > 0, [@w] * [@s], -[@w] * ( 100 - [@s] ) ) ) )
-			VAR denom =
-			    SUMX ( f, IF ( ISBLANK ( [@s] ), 0, ABS ( [@w] ) ) )
+			-- A pillar counts only if the county has at least one switched-on component with a
+			-- value; otherwise it is left out of BOTH the top and the bottom, never counted as 0.
+			VAR numer = SUMX ( p, IF ( ISBLANK ( [@s] ), 0, [@w] * [@s] ) )
+			VAR denom = SUMX ( p, IF ( ISBLANK ( [@s] ), 0, [@w] ) )
 			RETURN
 			    DIVIDE ( numer, denom )
 			```
-		formatString: 0.0
+		formatString: 0
 
 	/// 1 = best county among those currently shown.
 	measure 'My Rank' = ```
@@ -127,28 +118,58 @@ table County
 			```
 		formatString: 0
 
-	/// Share of your slider weight the county actually has data for. Below 100% means a factor was missing and the score is based on the rest.
+	/// Share of your slider weight the county has data for. Below 100% means a whole pillar was missing and the score is based on the rest.
 	measure 'Weight Used %' = ```
-			VAR f =
+			VAR p =
 			    ADDCOLUMNS (
-			        VALUES ( county_factor_score[factor_key] ),
-			        "@w", [Weight For Factor],
+			        ALLSELECTED ( county_factor_score[pillar] ),
+			        "@w", [Weight For Pillar],
 			        "@s", CALCULATE ( AVERAGE ( county_factor_score[factor_score] ) )
 			    )
 			RETURN
 			    DIVIDE (
-			        SUMX ( f, IF ( ISBLANK ( [@s] ), 0, ABS ( [@w] ) ) ),
-			        SUMX ( f, ABS ( [@w] ) )
+			        SUMX ( p, IF ( ISBLANK ( [@s] ), 0, [@w] ) ),
+			        SUMX ( p, [@w] )
 			    )
 			```
 		formatString: 0%
+
+	/// Gas supply pillar score for the county (0-100).
+	measure 'Gas supply score' = ```
+			CALCULATE ( AVERAGE ( county_factor_score[factor_score] ), county_factor_score[pillar] = "Gas supply" )
+			```
+		formatString: 0
+
+	/// Grid connection pillar score for the county (0-100).
+	measure 'Grid connection score' = ```
+			CALCULATE ( AVERAGE ( county_factor_score[factor_score] ), county_factor_score[pillar] = "Grid connection" )
+			```
+		formatString: 0
+
+	/// Site control pillar score for the county (0-100).
+	measure 'Site control score' = ```
+			CALCULATE ( AVERAGE ( county_factor_score[factor_score] ), county_factor_score[pillar] = "Site control" )
+			```
+		formatString: 0
+
+	/// Air permit pillar score for the county (0-100).
+	measure 'Air permit score' = ```
+			CALCULATE ( AVERAGE ( county_factor_score[factor_score] ), county_factor_score[pillar] = "Air permit" )
+			```
+		formatString: 0
+
+	/// Community pillar score for the county (0-100).
+	measure 'Community score' = ```
+			CALCULATE ( AVERAGE ( county_factor_score[factor_score] ), county_factor_score[pillar] = "Community" )
+			```
+		formatString: 0
 
 	/// 0-100 score for the single factor picked on the Single factor page.
 	measure 'Layer Score' = ```
 			IF ( HASONEVALUE ( county_factor_score[factor_label] ),
 			     AVERAGE ( county_factor_score[factor_score] ) )
 			```
-		formatString: 0.0
+		formatString: 0
 
 	/// The underlying number before scaling, in the factor's own unit.
 	measure 'Layer Raw Value' = ```
@@ -160,6 +181,11 @@ table County
 	measure 'Layer Title' = ```
 			SELECTEDVALUE ( county_factor_score[factor_label], "Pick one factor on the left" )
 			    & IF ( HASONEVALUE ( county_factor_score[unit] ), " (" & SELECTEDVALUE ( county_factor_score[unit] ) & ")", "" )
+			```
+
+	measure 'Detail Title' = ```
+			IF ( HASONEVALUE ( County[county_name] ), SELECTEDVALUE ( County[county_name] ) & " County",
+			     "No county selected: on Score map, right-click a county, Drill through, County detail" )
 			```
 
 	measure 'Pipe Miles' = ```

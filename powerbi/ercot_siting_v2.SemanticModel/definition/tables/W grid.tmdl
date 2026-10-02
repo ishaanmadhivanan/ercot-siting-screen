@@ -1,0 +1,16 @@
+table 'W grid'
+	isHidden
+
+	column 'Grid connection'
+		dataType: int64
+		sourceColumn: [Value]
+		summarizeBy: none
+
+	measure 'W grid Value' = ```
+			SELECTEDVALUE ( 'W grid'[Grid connection], 5 )
+			```
+		formatString: 0
+
+	partition 'W grid' = calculated
+		mode: import
+		source = GENERATESERIES ( 0, 10, 1 )

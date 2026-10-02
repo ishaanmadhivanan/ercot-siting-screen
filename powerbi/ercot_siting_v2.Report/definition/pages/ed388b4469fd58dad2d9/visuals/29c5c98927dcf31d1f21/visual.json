@@ -5,7 +5,7 @@
     "x": 8,
     "y": 4,
     "z": 1000,
-    "width": 600,
+    "width": 1900,
     "height": 80,
     "tabOrder": 1000
   },
@@ -17,17 +17,17 @@
           "projections": [
             {
               "field": {
-                "Column": {
+                "Measure": {
                   "Expression": {
                     "SourceRef": {
                       "Entity": "County"
                     }
                   },
-                  "Property": "county_name"
+                  "Property": "Detail Title"
                 }
               },
-              "queryRef": "County.county_name",
-              "nativeQueryRef": "county_name"
+              "queryRef": "County.Detail Title",
+              "nativeQueryRef": "Detail Title"
             }
           ]
         }

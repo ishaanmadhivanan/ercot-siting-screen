@@ -1,0 +1,75 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
+  "name": "ebafc473240cea892d6d",
+  "position": {
+    "x": 1280,
+    "y": 34,
+    "z": 1009,
+    "width": 636,
+    "height": 440,
+    "tabOrder": 1009
+  },
+  "visual": {
+    "visualType": "clusteredBarChart",
+    "query": {
+      "queryState": {
+        "Category": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "county_factor_score"
+                    }
+                  },
+                  "Property": "pillar"
+                }
+              },
+              "queryRef": "county_factor_score.pillar",
+              "nativeQueryRef": "pillar",
+              "active": true
+            }
+          ]
+        },
+        "Y": {
+          "projections": [
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "County"
+                    }
+                  },
+                  "Property": "Pillar Score"
+                }
+              },
+              "queryRef": "County.Pillar Score",
+              "nativeQueryRef": "Pillar Score"
+            }
+          ]
+        }
+      },
+      "sortDefinition": {
+        "sort": [
+          {
+            "field": {
+              "Column": {
+                "Expression": {
+                  "SourceRef": {
+                    "Entity": "county_factor_score"
+                  }
+                },
+                "Property": "pillar"
+              }
+            },
+            "direction": "Ascending"
+          }
+        ],
+        "isDefaultSort": true
+      }
+    },
+    "drillFilterOtherVisuals": false
+  }
+}

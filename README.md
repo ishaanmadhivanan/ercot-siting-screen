@@ -102,7 +102,9 @@ docs/             methodology writeup
 
 To open it: Power BI Desktop, File, Open, choose `ercot_siting_v2.pbip`. Then Transform data, Edit parameters, set `ServerName` (default `localhost\SQLEXPRESS`) and `DatabaseName` (default `ErcotSiting`), and Refresh.
 
-Pages: Score map (19 weight sliders, map, top 15, ozone and NOx filters), Single factor (one layer at a time), County detail (drill-through: factor scores, pipelines, plants), Catalog (from `dim.metric`).
+Pages: Score map (5 pillar weight sliders, component on/off list, map, pillar bar for the selected county, top 10 table, ozone and NOx filters), Single factor (one layer at a time), County detail (drill-through: pillar, component, raw value and score; pipelines; plants), Catalog (from `dim.metric`, grouped by pillar).
 
-Sliders run 0 to 10; 0 drops a factor. Defaults reproduce the `gas` preset. The queue slider runs -10 to 10 because whether a busy queue is good depends on the use case: negative means fewer MW in the queue is better.
+The score is built from five pillars set in `dim.metric.pillar`: Gas supply, Grid connection, Site control, Air permit, Community. Each pillar has a 0-10 weight slider (default 5 each; 0 drops it). Inside a pillar, the components you leave ticked count equally; a component with no value for a county is skipped, not scored 0. Overall score = pillar scores weighted by the sliders, over pillars the county has data for.
+
+Counties with no active gas queue are left blank on that factor (not scored 100). `queue_attrition` and `retiring_mw` are in the catalog but not in the score; see their caveats.
 

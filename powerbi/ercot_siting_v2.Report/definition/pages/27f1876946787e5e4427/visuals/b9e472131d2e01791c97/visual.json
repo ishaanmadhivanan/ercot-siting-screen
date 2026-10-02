@@ -4,10 +4,10 @@
   "position": {
     "x": 410,
     "y": 4,
-    "z": 1019,
+    "z": 1007,
     "width": 860,
     "height": 680,
-    "tabOrder": 1019
+    "tabOrder": 1007
   },
   "visual": {
     "visualType": "filledMap",

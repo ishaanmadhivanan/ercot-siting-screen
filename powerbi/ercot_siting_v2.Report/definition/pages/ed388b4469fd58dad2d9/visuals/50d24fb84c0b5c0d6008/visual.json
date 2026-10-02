@@ -23,6 +23,20 @@
                       "Entity": "county_factor_score"
                     }
                   },
+                  "Property": "pillar"
+                }
+              },
+              "queryRef": "county_factor_score.pillar",
+              "nativeQueryRef": "pillar"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "county_factor_score"
+                    }
+                  },
                   "Property": "factor_label"
                 }
               },
@@ -84,10 +98,10 @@
                     "Entity": "county_factor_score"
                   }
                 },
-                "Property": "factor_score"
+                "Property": "pillar"
               }
             },
-            "direction": "Descending"
+            "direction": "Ascending"
           }
         ],
         "isDefaultSort": true

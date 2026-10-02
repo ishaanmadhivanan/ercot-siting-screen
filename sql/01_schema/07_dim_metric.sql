@@ -15,6 +15,14 @@
       'preset'           - depends on the use case (see dim.score_weight)
       'none'             - descriptive text with no better or worse
 
+    pillar (score metrics only): which of the five report pillars the factor
+    belongs to (Gas supply, Grid connection, Site control, Air permit,
+    Community). NULL keeps the factor in the catalog but out of the county
+    score (rpt.county_factor_score skips it).
+
+    zero_is_missing (score metrics only): 1 = a raw value of 0 means "nothing
+    to measure here", so the county's score is left blank instead of 0 or 100.
+
     score_transform (score metrics only, used by rpt.county_factor_score):
       'linear' - raw value
       'log'    - LOG(1 + value), for right-skewed counts and MW where a few
@@ -40,6 +48,8 @@ CREATE TABLE dim.metric (
     caveat            NVARCHAR(400)  NULL,
     stage_added       SMALLINT       NOT NULL,
     score_transform   VARCHAR(10)    NOT NULL CONSTRAINT df_metric_transform DEFAULT 'linear',
+    pillar            NVARCHAR(30)   NULL,       -- report pillar; NULL = not part of the county score
+    zero_is_missing   BIT            NOT NULL CONSTRAINT df_metric_zero DEFAULT 0,
     CONSTRAINT ck_metric_transform CHECK (score_transform IN ('linear', 'log')),
     CONSTRAINT ck_metric_type CHECK (metric_type IN ('score', 'flag', 'context')),
     CONSTRAINT ck_metric_dir  CHECK (better_direction IN ('higher', 'lower', 'preset', 'none'))
@@ -56,7 +66,7 @@ VALUES
 
 ('retiring_mw', 'Capacity retiring by 2030', 'grid', 'score', 'MW', 'higher',
  'EIA Form 860 (2024)', 'https://www.eia.gov/electricity/data/eia860/', '2024-12-31',
- 'Through 2030, EIA-860 lists planned ERCOT retirements almost only in Bexar, so this barely discriminates between counties. Superseded by aging_thermal_mw in the gas preset.', 1),
+ 'Through 2030, EIA-860 lists planned ERCOT retirements almost only in Bexar, so this barely discriminates between counties. Superseded by aging_thermal_mw. Removed from rpt.county_factor in Phase 5 (pillar layout).', 1),
 
 ('pop_density', 'Population density', 'land', 'score', 'people per sq mi', 'lower',
  'US Census population estimates (2025) and Gazetteer land area (2024)',
@@ -71,13 +81,13 @@ VALUES
  'EIA Form 923 (2020-2024)', 'https://www.eia.gov/electricity/data/eia923/', '2024-12-31',
  'Smoothed with a 10,000 MWh floor so zero-generation counties do not tie at a ceiling.', 2),
 
-('queue_congestion', 'Active interconnection queue', 'grid', 'score', 'MW', 'preset',
+('queue_congestion', 'Active interconnection queue', 'grid', 'score', 'MW', 'lower',
  'ERCOT GIS Report (August 2026)', 'https://www.ercot.com/mp/data-products/data-product-details?id=PG7-200-ER', '2026-08-31',
- 'Negative for generation (competition), positive for datacenter (supply arriving). Excludes confidential projects not yet in full study.', 3),
+ 'Fewer queued MW is better for a gas plant (less competition for the same grid). The datacenter preset in dim.score_weight still treats it the other way. Excludes confidential projects not yet in full study.', 3),
 
 ('queue_attrition', 'Queue attrition rate', 'grid', 'score', 'ratio 0-1', 'lower',
  'ERCOT GIS Report (August 2026)', 'https://www.ercot.com/mp/data-products/data-product-details?id=PG7-200-ER', '2026-08-31',
- 'Shrunk toward the statewide rate for counties with little history. Cumulative withdrawals vs current queue, not a true failure rate.', 3),
+ 'Shrunk toward the statewide rate for counties with little history. Cumulative withdrawals vs current queue, not a true failure rate. Left out of the county score in Phase 5: the values differ by about 0.01 across counties, so min-max scaling turned noise into a 0-100 spread.', 3),
 
 -- ---------- Phase 1 of the gas pivot: gas-specific versions of existing factors ----------
 ('aging_thermal_mw', 'Gas and coal 40+ years old', 'grid', 'score', 'MW', 'higher',
@@ -86,7 +96,7 @@ VALUES
 
 ('gas_queue_mw', 'Active gas queue', 'grid', 'score', 'MW', 'lower',
  'ERCOT GIS Report (August 2026)', 'https://www.ercot.com/mp/data-products/data-product-details?id=PG7-200-ER', '2026-08-31',
- 'Gas projects only - the direct competition for a new gas plant. Excludes confidential projects not yet in full study.', 4),
+ 'Gas projects only - the direct competition for a new gas plant. Counties with no active gas queue are left blank (not scored 100): most counties have none, so a 100 told you nothing. Excludes confidential projects not yet in full study.', 4),
 
 ('gas_capacity_factor', 'Gas fleet capacity factor', 'grid', 'score', 'ratio 0-1', 'higher',
  'EIA Form 923 (2024, fuel code NG) with EIA-860 gas capacity', 'https://www.eia.gov/electricity/data/eia923/', '2024-12-31',
@@ -201,6 +211,26 @@ WHERE metric_key IN ('installed_mw', 'retiring_mw', 'pop_density', 'queue_conges
                      'land_owner_density', 'land_parcels_500ac');
 GO
 
+
+-- Phase 5: report pillars. Only score metrics get a pillar; NULL = not in the county score.
+UPDATE dim.metric SET pillar = 'Gas supply'
+WHERE metric_key IN ('gas_pipe_miles', 'gas_pipe_large_miles', 'gas_pipe_interstate_miles',
+                     'gas_pipe_operators', 'gas_gathering_miles');
+
+UPDATE dim.metric SET pillar = 'Grid connection'
+WHERE metric_key IN ('installed_mw', 'capacity_factor', 'gas_capacity_factor', 'generation_trend',
+                     'gas_queue_mw', 'queue_congestion');
+-- queue_attrition and retiring_mw stay NULL on purpose (see their caveats).
+
+UPDATE dim.metric SET pillar = 'Site control'
+WHERE metric_key IN ('aging_thermal_mw', 'land_large_tract_share', 'land_owner_density', 'land_parcels_500ac');
+
+UPDATE dim.metric SET pillar = 'Air permit'   WHERE metric_key = 'ozone_severity';
+UPDATE dim.metric SET pillar = 'Community'    WHERE metric_key = 'pop_density';
+
+UPDATE dim.metric SET zero_is_missing = 1 WHERE metric_key = 'gas_queue_mw';
+GO
+
 -- Check 1: every factor the model scores has a catalog row. Should return zero rows.
 SELECT DISTINCT f.factor_key AS missing_from_catalog
 FROM rpt.county_factor f
@@ -214,7 +244,12 @@ LEFT JOIN dim.metric m ON m.metric_key = w.factor_key
 WHERE m.metric_key IS NULL;
 
 -- Check 2: the catalog as a reader would see it.
-SELECT metric_key, label, category, metric_type, unit, better_direction, score_transform, data_date
+SELECT metric_key, label, pillar, category, metric_type, unit, better_direction, score_transform, data_date
 FROM dim.metric
-ORDER BY stage_added, metric_key;
+ORDER BY pillar, stage_added, metric_key;
+
+-- Check 3: every score metric is in a pillar except retiring_mw and queue_attrition. Expect exactly those two.
+SELECT metric_key AS score_metric_without_pillar
+FROM dim.metric
+WHERE metric_type = 'score' AND pillar IS NULL;
 GO

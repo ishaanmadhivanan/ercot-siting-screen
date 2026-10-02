@@ -2,16 +2,19 @@ table plant
 
 	column county_fips
 		dataType: string
+		isHidden
 		summarizeBy: none
 		sourceColumn: county_fips
 
 	column plant_code
 		dataType: int64
+		isHidden
 		summarizeBy: none
 		sourceColumn: plant_code
 
 	column generator_id
 		dataType: string
+		isHidden
 		summarizeBy: none
 		sourceColumn: generator_id
 

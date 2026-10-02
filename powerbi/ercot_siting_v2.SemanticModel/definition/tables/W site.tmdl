@@ -1,0 +1,16 @@
+table 'W site'
+	isHidden
+
+	column 'Site control'
+		dataType: int64
+		sourceColumn: [Value]
+		summarizeBy: none
+
+	measure 'W site Value' = ```
+			SELECTEDVALUE ( 'W site'[Site control], 5 )
+			```
+		formatString: 0
+
+	partition 'W site' = calculated
+		mode: import
+		source = GENERATESERIES ( 0, 10, 1 )
