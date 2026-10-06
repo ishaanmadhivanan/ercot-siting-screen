@@ -27,7 +27,8 @@
                 }
               },
               "queryRef": "County.county_name",
-              "nativeQueryRef": "county_name"
+              "nativeQueryRef": "county_name",
+              "displayName": "County"
             },
             {
               "field": {
@@ -41,7 +42,8 @@
                 }
               },
               "queryRef": "County.My Score",
-              "nativeQueryRef": "My Score"
+              "nativeQueryRef": "My Score",
+              "displayName": "Overall score"
             },
             {
               "field": {
@@ -135,11 +137,12 @@
                       "Entity": "County"
                     }
                   },
-                  "Property": "Weight Used %"
+                  "Property": "Data coverage %"
                 }
               },
-              "queryRef": "County.Weight Used %",
-              "nativeQueryRef": "Weight Used %"
+              "queryRef": "County.Data coverage %",
+              "nativeQueryRef": "Data coverage %",
+              "displayName": "Data coverage"
             }
           ]
         }
@@ -163,7 +166,44 @@
         "isDefaultSort": true
       }
     },
-    "drillFilterOtherVisuals": true
+    "objects": {
+      "total": [
+        {
+          "properties": {
+            "totals": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true,
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Top 10 counties'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
   },
   "filterConfig": {
     "filters": [

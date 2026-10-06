@@ -1,6 +1,6 @@
 {
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
-  "name": "47e2b9a16699080e5914",
+  "name": "d775f79f500819b1b8d9",
   "position": {
     "x": 1600,
     "y": 484,
@@ -23,11 +23,11 @@
                       "Entity": "County"
                     }
                   },
-                  "Property": "nox_offset_cost_per_tpy"
+                  "Property": "Has 20-inch+ pipeline"
                 }
               },
-              "queryRef": "County.nox_offset_cost_per_tpy",
-              "nativeQueryRef": "nox_offset_cost_per_tpy",
+              "queryRef": "County.Has 20-inch+ pipeline",
+              "nativeQueryRef": "Has 20-inch+ pipeline",
               "active": true
             }
           ]
@@ -41,7 +41,7 @@
             "mode": {
               "expr": {
                 "Literal": {
-                  "Value": "'Between'"
+                  "Value": "'Basic'"
                 }
               }
             }
@@ -54,7 +54,7 @@
   "filterConfig": {
     "filters": [
       {
-        "name": "e3508be0ee19b3d758a4",
+        "name": "812d6b47b765a296809a",
         "field": {
           "Column": {
             "Expression": {
@@ -62,7 +62,7 @@
                 "Entity": "County"
               }
             },
-            "Property": "nox_offset_cost_per_tpy"
+            "Property": "Has 20-inch+ pipeline"
           }
         },
         "type": "Categorical"

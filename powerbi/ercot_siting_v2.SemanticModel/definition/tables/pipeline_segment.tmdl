@@ -39,8 +39,10 @@ table pipeline_segment
 		mode: import
 		source =
 				let
-					Source = Sql.Database(ServerName, DatabaseName, [Query = "SELECT p.county_fips, p.operator_name, p.system_name, p.diameter_in, p.interstate, p.miles FROM fact.pipeline_segment p JOIN dim.county c ON c.county_fips = p.county_fips WHERE c.in_ercot = 1"]),
-					Typed = Table.TransformColumnTypes(Source, {{"county_fips", type text},{"operator_name", type text},{"system_name", type text},{"diameter_in", type number},{"interstate", type text},{"miles", type number}})
+					Source = Sql.Database(ServerName, DatabaseName),
+					View = Source{[Schema = "rpt", Item = "pbi_pipeline_segment"]}[Data],
+					Kept = Table.SelectColumns(View, {"county_fips", "operator_name", "system_name", "diameter_in", "interstate", "miles"}),
+					Typed = Table.TransformColumnTypes(Kept, {{"county_fips", type text},{"operator_name", type text},{"system_name", type text},{"diameter_in", type number},{"interstate", type text},{"miles", type number}})
 				in
 					Typed
 

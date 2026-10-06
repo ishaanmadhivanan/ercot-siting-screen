@@ -68,8 +68,10 @@ table county_factor_score
 		mode: import
 		source =
 				let
-					Source = Sql.Database(ServerName, DatabaseName, [Query = "SELECT county_fips, county_name, factor_key, factor_label, category, pillar, unit, raw_value, better_direction, score_transform, factor_score FROM rpt.county_factor_score"]),
-					Typed = Table.TransformColumnTypes(Source, {{"county_fips", type text},{"county_name", type text},{"factor_key", type text},{"factor_label", type text},{"category", type text},{"pillar", type text},{"unit", type text},{"raw_value", type number},{"better_direction", type text},{"score_transform", type text},{"factor_score", type number}})
+					Source = Sql.Database(ServerName, DatabaseName),
+					View = Source{[Schema = "rpt", Item = "pbi_county_factor_score"]}[Data],
+					Kept = Table.SelectColumns(View, {"county_fips", "county_name", "factor_key", "factor_label", "category", "pillar", "unit", "raw_value", "better_direction", "score_transform", "factor_score"}),
+					Typed = Table.TransformColumnTypes(Kept, {{"county_fips", type text},{"county_name", type text},{"factor_key", type text},{"factor_label", type text},{"category", type text},{"pillar", type text},{"unit", type text},{"raw_value", type number},{"better_direction", type text},{"score_transform", type text},{"factor_score", type number}})
 				in
 					Typed
 

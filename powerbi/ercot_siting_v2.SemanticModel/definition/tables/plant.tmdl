@@ -57,8 +57,10 @@ table plant
 		mode: import
 		source =
 				let
-					Source = Sql.Database(ServerName, DatabaseName, [Query = "SELECT g.county_fips, g.plant_code, g.generator_id, g.plant_name, g.technology, g.nameplate_mw, g.operating_year, g.latitude, g.longitude FROM fact.generator_capacity g JOIN dim.county c ON c.county_fips = g.county_fips WHERE c.in_ercot = 1 AND g.status_group = 'Operating' AND g.data_vintage_year = (SELECT MAX(data_vintage_year) FROM fact.generator_capacity)"]),
-					Typed = Table.TransformColumnTypes(Source, {{"county_fips", type text},{"plant_code", Int64.Type},{"generator_id", type text},{"plant_name", type text},{"technology", type text},{"nameplate_mw", type number},{"operating_year", Int64.Type},{"latitude", type number},{"longitude", type number}})
+					Source = Sql.Database(ServerName, DatabaseName),
+					View = Source{[Schema = "rpt", Item = "pbi_plant"]}[Data],
+					Kept = Table.SelectColumns(View, {"county_fips", "plant_code", "generator_id", "plant_name", "technology", "nameplate_mw", "operating_year", "latitude", "longitude"}),
+					Typed = Table.TransformColumnTypes(Kept, {{"county_fips", type text},{"plant_code", Int64.Type},{"generator_id", type text},{"plant_name", type text},{"technology", type text},{"nameplate_mw", type number},{"operating_year", Int64.Type},{"latitude", type number},{"longitude", type number}})
 				in
 					Typed
 

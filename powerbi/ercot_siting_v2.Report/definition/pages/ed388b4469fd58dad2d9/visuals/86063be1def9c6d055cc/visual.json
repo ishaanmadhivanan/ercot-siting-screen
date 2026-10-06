@@ -3,10 +3,10 @@
   "name": "86063be1def9c6d055cc",
   "position": {
     "x": 720,
-    "y": 600,
+    "y": 650,
     "z": 1003,
     "width": 1196,
-    "height": 476,
+    "height": 426,
     "tabOrder": 1003
   },
   "visual": {
@@ -93,6 +93,43 @@
         "isDefaultSort": true
       }
     },
-    "drillFilterOtherVisuals": true
+    "objects": {
+      "total": [
+        {
+          "properties": {
+            "totals": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true,
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Operating power plants'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
   }
 }

@@ -3,10 +3,10 @@
   "name": "c7d02eeb01e12e71a5d5",
   "position": {
     "x": 720,
-    "y": 90,
+    "y": 260,
     "z": 1002,
     "width": 1196,
-    "height": 500,
+    "height": 380,
     "tabOrder": 1002
   },
   "visual": {
@@ -107,6 +107,43 @@
         "isDefaultSort": true
       }
     },
-    "drillFilterOtherVisuals": true
+    "objects": {
+      "total": [
+        {
+          "properties": {
+            "totals": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true,
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Gas pipelines'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
   }
 }

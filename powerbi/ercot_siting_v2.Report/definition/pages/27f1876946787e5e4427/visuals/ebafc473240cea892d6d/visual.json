@@ -70,6 +70,28 @@
         "isDefaultSort": true
       }
     },
-    "drillFilterOtherVisuals": false
+    "drillFilterOtherVisuals": false,
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Pillar scores (0-100)'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
   }
 }

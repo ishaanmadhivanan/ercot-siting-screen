@@ -1,0 +1,199 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
+  "name": "a37067c7c9bae58921a8",
+  "position": {
+    "x": 720,
+    "y": 90,
+    "z": 1004,
+    "width": 1196,
+    "height": 160,
+    "tabOrder": 1004
+  },
+  "visual": {
+    "visualType": "tableEx",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "County"
+                    }
+                  },
+                  "Property": "ozone_class"
+                }
+              },
+              "queryRef": "County.ozone_class",
+              "nativeQueryRef": "ozone_class",
+              "displayName": "Ozone class"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "County"
+                    }
+                  },
+                  "Property": "nox_offset_ratio"
+                }
+              },
+              "queryRef": "County.nox_offset_ratio",
+              "nativeQueryRef": "nox_offset_ratio",
+              "displayName": "NOx offset ratio"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "County"
+                    }
+                  },
+                  "Property": "nox_offset_cost_per_tpy"
+                }
+              },
+              "queryRef": "County.nox_offset_cost_per_tpy",
+              "nativeQueryRef": "nox_offset_cost_per_tpy",
+              "displayName": "Offset cost per tpy emitted"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "County"
+                    }
+                  },
+                  "Property": "nox_credit_price_per_tpy"
+                }
+              },
+              "queryRef": "County.nox_credit_price_per_tpy",
+              "nativeQueryRef": "nox_credit_price_per_tpy",
+              "displayName": "Credit price per tpy"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "County"
+                    }
+                  },
+                  "Property": "nox_credit_tons_traded"
+                }
+              },
+              "queryRef": "County.nox_credit_tons_traded",
+              "nativeQueryRef": "nox_credit_tons_traded",
+              "displayName": "Credit tons traded (2 yrs)"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "County"
+                    }
+                  },
+                  "Property": "lng_terminals"
+                }
+              },
+              "queryRef": "County.lng_terminals",
+              "nativeQueryRef": "lng_terminals",
+              "displayName": "LNG terminals"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "County"
+                    }
+                  },
+                  "Property": "land_industrial_acres"
+                }
+              },
+              "queryRef": "County.land_industrial_acres",
+              "nativeQueryRef": "land_industrial_acres",
+              "displayName": "Industrial acres"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "County"
+                    }
+                  },
+                  "Property": "land_parcel_coverage"
+                }
+              },
+              "queryRef": "County.land_parcel_coverage",
+              "nativeQueryRef": "land_parcel_coverage",
+              "displayName": "Parcel data coverage"
+            }
+          ]
+        }
+      },
+      "sortDefinition": {
+        "sort": [
+          {
+            "field": {
+              "Column": {
+                "Expression": {
+                  "SourceRef": {
+                    "Entity": "County"
+                  }
+                },
+                "Property": "ozone_class"
+              }
+            },
+            "direction": "Ascending"
+          }
+        ],
+        "isDefaultSort": true
+      }
+    },
+    "objects": {
+      "total": [
+        {
+          "properties": {
+            "totals": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true,
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Key facts'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

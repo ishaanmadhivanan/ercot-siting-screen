@@ -83,7 +83,9 @@ TABLES = {
         sql="SELECT c.county_fips, c.county_name, c.county_name + ' County, Texas' AS map_label, "
             "c.population, c.land_area_sqmi, "
             "a.ozone_class, a.nox_offset_ratio, a.nox_offset_cost_per_tpy, a.nox_credit_trades, "
-            "a.land_parcel_coverage, a.land_industrial_acres, a.lng_terminal_count "
+            "a.nox_credit_price_per_tpy, a.nox_credit_tons_traded, "
+            "a.land_parcel_coverage, a.land_industrial_acres, a.lng_terminal_count, a.lng_terminals, "
+            "ISNULL(pp.large_pipe_miles, 0) AS large_pipe_miles "
             "FROM dim.county c LEFT JOIN ("
             "SELECT county_fips, "
             "MAX(CASE WHEN attribute_key = 'ozone_classification' THEN value_text END) AS ozone_class, "
@@ -92,14 +94,21 @@ TABLES = {
             "MAX(CASE WHEN attribute_key = 'nox_credit_trades' THEN value_num END) AS nox_credit_trades, "
             "MAX(CASE WHEN attribute_key = 'land_parcel_coverage' THEN value_num END) AS land_parcel_coverage, "
             "MAX(CASE WHEN attribute_key = 'land_industrial_acres' THEN value_num END) AS land_industrial_acres, "
-            "MAX(CASE WHEN attribute_key = 'lng_terminal_count' THEN value_num END) AS lng_terminal_count "
+            "MAX(CASE WHEN attribute_key = 'lng_terminal_count' THEN value_num END) AS lng_terminal_count, "
+            "MAX(CASE WHEN attribute_key = 'lng_terminals' THEN value_text END) AS lng_terminals, "
+            "MAX(CASE WHEN attribute_key = 'nox_credit_price_per_tpy' THEN value_num END) AS nox_credit_price_per_tpy, "
+            "MAX(CASE WHEN attribute_key = 'nox_credit_tons_traded' THEN value_num END) AS nox_credit_tons_traded "
             "FROM fact.county_attribute GROUP BY county_fips) a ON a.county_fips = c.county_fips "
+            "LEFT JOIN (SELECT county_fips, SUM(miles) AS large_pipe_miles FROM fact.pipeline_segment "
+            "WHERE diameter_in >= 20 GROUP BY county_fips) pp ON pp.county_fips = c.county_fips "
             "WHERE c.in_ercot = 1",
         cols=[("county_fips", "string"), ("county_name", "string"), ("map_label", "string"),
               ("population", "int"), ("land_area_sqmi", "num"), ("ozone_class", "string"),
               ("nox_offset_ratio", "num"), ("nox_offset_cost_per_tpy", "num"),
               ("nox_credit_trades", "num"), ("land_parcel_coverage", "num"),
-              ("land_industrial_acres", "num"), ("lng_terminal_count", "num")],
+              ("land_industrial_acres", "num"), ("lng_terminal_count", "num"),
+              ("nox_credit_price_per_tpy", "num"), ("nox_credit_tons_traded", "num"),
+              ("lng_terminals", "string"), ("large_pipe_miles", "num")],
     ),
     "county_factor_score": dict(
         sql="SELECT county_fips, county_name, factor_key, factor_label, category, pillar, unit, "
@@ -136,19 +145,30 @@ TABLES = {
 }
 
 HIDDEN_COLS = {"county_fips", "factor_key", "score_transform", "better_direction",
-               "plant_code", "generator_id", "metric_key", "category", "map_label"}
+               "plant_code", "generator_id", "metric_key", "category", "map_label", "large_pipe_miles"}
 FORMATS = {"factor_score": "0", "raw_value": "#,##0.00", "miles": "#,##0.0",
            "nameplate_mw": "#,##0.0", "population": "#,##0", "diameter_in": "0.0",
            "land_area_sqmi": "#,##0.0", "nox_offset_cost_per_tpy": "$#,##0",
-           "nox_offset_ratio": "0.0", "land_parcel_coverage": "0.00"}
+           "nox_offset_ratio": "0.0", "land_parcel_coverage": "0%",
+           "nox_credit_price_per_tpy": "$#,##0", "nox_credit_tons_traded": "#,##0.0",
+           "land_industrial_acres": "#,##0", "large_pipe_miles": "#,##0.0", "lng_terminal_count": "0"}
 
 
-def m_source(spec):
+VIEWS = {"County": "pbi_county", "county_factor_score": "pbi_county_factor_score",
+         "pipeline_segment": "pbi_pipeline_segment", "plant": "pbi_plant", "metric": "pbi_metric"}
+
+
+def m_source(spec, name):
+    """Read a named view (sql/03_views/23_vw_powerbi.sql) instead of sending a native
+    query: no 'approve this native query' prompts, and the logic stays in SQL."""
     steps = ",".join('{"%s", %s}' % (c, TYPES[k][0]) for c, k in spec["cols"])
+    cols = ", ".join('"%s"' % c for c, _ in spec["cols"])
     return [
         "let",
-        "\tSource = Sql.Database(ServerName, DatabaseName, [Query = \"%s\"])," % spec["sql"].replace('"', '""'),
-        "\tTyped = Table.TransformColumnTypes(Source, {%s})" % steps,
+        "\tSource = Sql.Database(ServerName, DatabaseName),",
+        '\tView = Source{[Schema = "rpt", Item = "%s"]}[Data],' % VIEWS[name],
+        "\tKept = Table.SelectColumns(View, {%s})," % cols,
+        "\tTyped = Table.TransformColumnTypes(Kept, {%s})" % steps,
         "in",
         "\tTyped",
     ]
@@ -177,7 +197,7 @@ def write_table(name, spec, extra_columns="", extra_measures=""):
     L.append(f"\tpartition {q(name)} = m")
     L.append("\t\tmode: import")
     L.append("\t\tsource =")
-    for line in m_source(spec):
+    for line in m_source(spec, name):
         L.append("\t\t\t\t" + line)
     L.append("")
     return "\n".join(L) + "\n"
@@ -239,7 +259,7 @@ RETURN
         "     RANKX ( ALLSELECTED ( County[county_name] ), [My Score], , DESC, DENSE ) )",
         "0", "1 = best county among those currently shown."))
     out.append(measure(
-        "Weight Used %",
+        "Data coverage %",
         """
 VAR p =
     ADDCOLUMNS (
@@ -262,7 +282,7 @@ RETURN
         "Layer Score",
         "IF ( HASONEVALUE ( county_factor_score[factor_label] ),\n"
         "     AVERAGE ( county_factor_score[factor_score] ) )",
-        "0", "0-100 score for the single factor picked on the Single factor page."))
+        "0", "0-100 score for the single factor picked on the Explore one factor page."))
     out.append(measure(
         "Layer Raw Value",
         "IF ( HASONEVALUE ( county_factor_score[factor_label] ),\n"
@@ -303,6 +323,9 @@ def write_model():
             extra_meas = county_measures()
         if name == "County":
             extra_cols = ("\tcolumn 'Ozone Status' = IF ( County[ozone_class] = \"Attainment\", \"Attainment\", \"Nonattainment\" )\n"
+                          "\t\tdataType: string\n\t\tsummarizeBy: none\n\n"
+                          "\t/// Deal-breaker filter: does the county have any in-service gas transmission line of 20 inches or more?\n"
+                          "\tcolumn 'Has 20-inch+ pipeline' = IF ( County[large_pipe_miles] > 0, \"Yes\", \"No\" )\n"
                           "\t\tdataType: string\n\t\tsummarizeBy: none\n\n")
         (SM / "definition" / "tables" / f"{name}.tmdl").write_text(
             write_table(name, spec, extra_cols, extra_meas))
@@ -346,8 +369,10 @@ def mea(entity, prop):
     return {"Measure": {"Expression": {"SourceRef": {"Entity": entity}}, "Property": prop}}
 
 
-def proj(field, entity, prop, active=None):
+def proj(field, entity, prop, active=None, display=None):
     p = {"field": field, "queryRef": f"{entity}.{prop}", "nativeQueryRef": prop}
+    if display:
+        p["displayName"] = display
     if active:
         p["active"] = True
     return p
@@ -359,6 +384,13 @@ def lit(v):
 
 def pos(x, y, w, h, z):
     return {"x": x, "y": y, "z": z, "width": w, "height": h, "tabOrder": z}
+
+
+def titled(vis, text):
+    """Set a visual's title text (otherwise Power BI writes 'X and Y by Z')."""
+    vis.setdefault("visualContainerObjects", {})["title"] = [
+        {"properties": {"show": lit("true"), "text": lit("'" + text.replace("'", "''") + "'")}}]
+    return vis
 
 
 def visual(name, position, vis, filters=None):
@@ -434,7 +466,7 @@ GRADIENT = lambda field: {"solid": {"color": {"expr": {"FillRule": {"Input": fie
                                  "color": {"Literal": {"Value": "'#D9D9D9'"}}}}}}}}}}
 
 
-def filled_map(page, position, color_measure, tooltips):
+def filled_map(page, position, color_measure, tooltips, title=None):
     name = hid(page, "map")
     cat = col("County", "map_label")
     qs = {"Category": {"projections": [proj(cat, "County", "map_label", True)]}}
@@ -444,21 +476,27 @@ def filled_map(page, position, color_measure, tooltips):
            "objects": {"dataPoint": [{"properties": {"fill": GRADIENT(mea("County", color_measure))},
                                       "selector": {"data": [{"dataViewWildcard": {"matchingOption": 1}}]}}]},
            "drillFilterOtherVisuals": True}
+    if title:
+        titled(vis, title)
     return name, visual(name, position, vis,
                         [{"name": hid(name, "f"), "field": cat, "type": "Categorical"}])
 
 
-def table_visual(page, key, position, cols, sort, filters=None):
-    """cols: list of (kind, entity, prop). sort: (kind, entity, prop, dir)."""
+def table_visual(page, key, position, cols, sort, filters=None, title=None):
+    """cols: list of (kind, entity, prop[, display name]). sort: (kind, entity, prop, dir)."""
     name = hid(page, "table", key)
-    fields = [(col if k == "c" else mea)(e, p) for k, e, p in cols]
-    projs = [proj(f, e, p) for f, (k, e, p) in zip(fields, cols)]
+    cols = [c if len(c) == 4 else (*c, None) for c in cols]
+    fields = [(col if k == "c" else mea)(e, p) for k, e, p, _ in cols]
+    projs = [proj(f, e, p, display=d) for f, (k, e, p, d) in zip(fields, cols)]
     sk, se, sp, sd = sort
     vis = {"visualType": "tableEx", "query": {
         "queryState": {"Values": {"projections": projs}},
         "sortDefinition": {"sort": [{"field": (col if sk == "c" else mea)(se, sp), "direction": sd}],
                            "isDefaultSort": True}},
+        "objects": {"total": [{"properties": {"totals": lit("false")}}]},
         "drillFilterOtherVisuals": True}
+    if title:
+        titled(vis, title)
     return name, visual(name, position, vis, filters)
 
 
@@ -473,6 +511,7 @@ def pillar_bar(page, position):
                        "Y": {"projections": [proj(val, "County", "Pillar Score")]}},
         "sortDefinition": {"sort": [{"field": cat, "direction": "Ascending"}], "isDefaultSort": True}},
         "drillFilterOtherVisuals": False}
+    titled(vis, "Pillar scores (0-100)")
     return name, visual(name, position, vis)
 
 
@@ -545,21 +584,22 @@ def write_report():
     vs.append(hier_slicer(P1, "county_factor_score", ["pillar", "factor_label"], pos(8, 408, 395, 668, z))); z += 1
     vs.append(filled_map(P1, pos(410, 4, 860, 680, z), "My Score",
                          [(mea("County", "My Rank"), "County", "My Rank"),
-                          (mea("County", "Weight Used %"), "County", "Weight Used %")])); z += 1
+                          (mea("County", "Data coverage %"), "County", "Data coverage %")],
+                         title="Overall score by county (darker = better)")); z += 1
     vs.append(textbox(P1, "barhead", pos(1280, 4, 636, 28, z), "Pillar scores: click a county on the map", "11pt", True)); z += 1
     vs.append(pillar_bar(P1, pos(1280, 34, 636, 440, z))); z += 1
     vs.append(slicer(P1, "County", "Ozone Status", pos(1280, 484, 310, 200, z), "Basic")); z += 1
-    vs.append(slicer(P1, "County", "nox_offset_cost_per_tpy", pos(1600, 484, 316, 200, z), "Between")); z += 1
+    vs.append(slicer(P1, "County", "Has 20-inch+ pipeline", pos(1600, 484, 316, 200, z), "Basic")); z += 1
     tname, tv = table_visual(P1, "top10", pos(410, 692, 1506, 296, z), [
-        ("c", "County", "county_name"), ("m", "County", "My Score")]
+        ("c", "County", "county_name", "County"), ("m", "County", "My Score", "Overall score")]
         + [("m", "County", f"{label} score") for k, label in PILLARS]
-        + [("m", "County", "My Rank"), ("m", "County", "Weight Used %")],
-        ("m", "County", "My Score", "Descending"))
+        + [("m", "County", "My Rank"), ("m", "County", "Data coverage %", "Data coverage")],
+        ("m", "County", "My Score", "Descending"), title="Top 10 counties")
     tv["filterConfig"] = {"filters": [topn_filter(tname, 10)]}
     vs.append((tname, tv)); z += 1
     vs.append(textbox(P1, "howto", pos(410, 994, 900, 82, z), "How to use: set a weight (0-10) for each pillar on the left; 0 drops it. "
                       "Tick components to narrow what counts inside a pillar. Higher score is better. Click a county for its pillar scores; "
-                      "right-click, Drill through, County detail for the numbers.", "11pt")); z += 1
+                      "right-click, Drill through, County detail for the numbers. Data coverage below 100% = part of your weight had no data there.", "11pt")); z += 1
     vs.append(textbox(P1, "asof", pos(1320, 994, 596, 82, z), "Data as of: EPA Green Book Aug 2026; ERCOT interconnection queue Aug 2026; "
                       "TxGIO parcels 2025; RRC pipelines Sep 30 2026; EIA-860/923 2024.", "10pt")); z += 1
     write_page(P1, P1, "Score map", vs)
@@ -570,11 +610,12 @@ def write_report():
                      "Basic", preset="'Large gas pipe (20 in and up)'", single=True))
     vs.append(card(P2, "title", pos(400, 4, 1516, 80, 1001), mea("County", "Layer Title"), "County", "Layer Title"))
     vs.append(filled_map(P2, pos(400, 90, 900, 986, 1002), "Layer Score",
-                         [(mea("County", "Layer Raw Value"), "County", "Layer Raw Value")]))
+                         [(mea("County", "Layer Raw Value"), "County", "Layer Raw Value")],
+                         title="Score on the selected factor (darker = better)"))
     vs.append(table_visual(P2, "layer", pos(1310, 90, 606, 986, 1003), [
         ("c", "County", "county_name"), ("m", "County", "Layer Raw Value"),
         ("m", "County", "Layer Score")], ("m", "County", "Layer Score", "Descending")))
-    write_page(P2, P2, "Single factor", vs)
+    write_page(P2, P2, "Explore one factor", vs)
 
     # ---- page 3: county detail (drill-through target)
     vs = []
@@ -583,15 +624,25 @@ def write_report():
         ("c", "county_factor_score", "pillar"), ("c", "county_factor_score", "factor_label"),
         ("c", "county_factor_score", "raw_value"),
         ("c", "county_factor_score", "unit"), ("c", "county_factor_score", "factor_score")],
-        ("c", "county_factor_score", "pillar", "Ascending")))
-    vs.append(table_visual(P3, "pipes", pos(720, 90, 1196, 500, 1002), [
+        ("c", "county_factor_score", "pillar", "Ascending"), title="Factor scores"))
+    vs.append(table_visual(P3, "facts", pos(720, 90, 1196, 160, 1004), [
+        ("c", "County", "ozone_class", "Ozone class"),
+        ("c", "County", "nox_offset_ratio", "NOx offset ratio"),
+        ("c", "County", "nox_offset_cost_per_tpy", "Offset cost per tpy emitted"),
+        ("c", "County", "nox_credit_price_per_tpy", "Credit price per tpy"),
+        ("c", "County", "nox_credit_tons_traded", "Credit tons traded (2 yrs)"),
+        ("c", "County", "lng_terminals", "LNG terminals"),
+        ("c", "County", "land_industrial_acres", "Industrial acres"),
+        ("c", "County", "land_parcel_coverage", "Parcel data coverage")],
+        ("c", "County", "ozone_class", "Ascending"), title="Key facts"))
+    vs.append(table_visual(P3, "pipes", pos(720, 260, 1196, 380, 1002), [
         ("c", "pipeline_segment", "operator_name"), ("c", "pipeline_segment", "system_name"),
         ("c", "pipeline_segment", "diameter_in"), ("c", "pipeline_segment", "interstate"),
-        ("c", "pipeline_segment", "miles")], ("c", "pipeline_segment", "miles", "Descending")))
-    vs.append(table_visual(P3, "plants", pos(720, 600, 1196, 476, 1003), [
+        ("c", "pipeline_segment", "miles")], ("c", "pipeline_segment", "miles", "Descending"), title="Gas pipelines"))
+    vs.append(table_visual(P3, "plants", pos(720, 650, 1196, 426, 1003), [
         ("c", "plant", "plant_name"), ("c", "plant", "technology"),
         ("c", "plant", "nameplate_mw"), ("c", "plant", "operating_year")],
-        ("c", "plant", "nameplate_mw", "Descending")))
+        ("c", "plant", "nameplate_mw", "Descending"), title="Operating power plants"))
     fname = hid("drill", "county")
     write_page(P3, P3, "County detail", vs, extra={
         "filterConfig": {"filters": [{"name": fname, "field": col("County", "county_name"),

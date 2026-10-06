@@ -56,11 +56,11 @@
                       "Entity": "County"
                     }
                   },
-                  "Property": "Weight Used %"
+                  "Property": "Data coverage %"
                 }
               },
-              "queryRef": "County.Weight Used %",
-              "nativeQueryRef": "Weight Used %"
+              "queryRef": "County.Data coverage %",
+              "nativeQueryRef": "Data coverage %"
             }
           ]
         }
@@ -133,7 +133,29 @@
         }
       ]
     },
-    "drillFilterOtherVisuals": true
+    "drillFilterOtherVisuals": true,
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Overall score by county (darker = better)'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
   },
   "filterConfig": {
     "filters": [

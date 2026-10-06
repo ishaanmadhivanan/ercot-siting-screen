@@ -20,7 +20,7 @@
               {
                 "textRuns": [
                   {
-                    "value": "How to use: set a weight (0-10) for each pillar on the left; 0 drops it. Tick components to narrow what counts inside a pillar. Higher score is better. Click a county for its pillar scores; right-click, Drill through, County detail for the numbers.",
+                    "value": "How to use: set a weight (0-10) for each pillar on the left; 0 drops it. Tick components to narrow what counts inside a pillar. Higher score is better. Click a county for its pillar scores; right-click, Drill through, County detail for the numbers. Data coverage below 100% = part of your weight had no data there.",
                     "textStyle": {
                       "fontSize": "11pt"
                     }
