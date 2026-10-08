@@ -43,6 +43,17 @@ PILLARS = [
     ("community", "Community"),
 ]
 PILLAR_DEFAULT = 5
+# Every component in the county score (dim.metric rows with a pillar). The component
+# list starts with all of these ticked; keep in step with 07_dim_metric.sql.
+COMPONENTS = [
+    "Gas transmission pipe", "Large gas pipe (20 in and up)", "Interstate gas pipe",
+    "Gas pipeline operators", "Gas gathering pipe",
+    "Existing generation capacity", "Realised capacity factor", "Gas fleet capacity factor",
+    "Generation trend 2020-2024", "Active gas queue", "Active interconnection queue",
+    "Gas and coal 40+ years old", "Land in large tracts (100+ ac)",
+    "Landowners per 1,000 rural acres", "Parcels of 500+ acres",
+    "Ozone nonattainment severity", "Population density",
+]
 # Kept so wtable()/wmeasure() keep their (key, label, default, lo) shape.
 FACTORS = [(k, label, PILLAR_DEFAULT, 0) for k, label in PILLARS]
 
@@ -290,12 +301,12 @@ RETURN
         "#,##0.00", "The underlying number before scaling, in the factor's own unit."))
     out.append(measure(
         "Layer Title",
-        'SELECTEDVALUE ( county_factor_score[factor_label], "Pick one factor on the left" )'
+        'SELECTEDVALUE ( county_factor_score[factor_label], "Pick a factor on the left" )'
         '\n    & IF ( HASONEVALUE ( county_factor_score[unit] ), " (" & SELECTEDVALUE ( county_factor_score[unit] ) & ")", "" )'))
     out.append(measure(
         "Detail Title",
         'IF ( HASONEVALUE ( County[county_name] ), SELECTEDVALUE ( County[county_name] ) & " County",\n'
-        '     "No county selected: on Score map, right-click a county, Drill through, County detail" )'))
+        '     "Right-click a county on the Score map and choose Drill through > County detail" )'))
     out.append(measure("Pipe Miles", "SUM ( pipeline_segment[miles] )", "#,##0.0"))
     out.append(measure("Plant MW", "SUM ( plant[nameplate_mw] )", "#,##0"))
     return "".join(out)
@@ -388,8 +399,9 @@ def pos(x, y, w, h, z):
 
 def titled(vis, text):
     """Set a visual's title text (otherwise Power BI writes 'X and Y by Z')."""
-    vis.setdefault("visualContainerObjects", {})["title"] = [
-        {"properties": {"show": lit("true"), "text": lit("'" + text.replace("'", "''") + "'")}}]
+    vco = vis.setdefault("visualContainerObjects", {})
+    vco["title"] = [{"properties": {"show": lit("true"), "text": lit("'" + text.replace("'", "''") + "'")}}]
+    vco["subTitle"] = [{"properties": {"show": lit("false")}}]
     return vis
 
 
@@ -427,12 +439,17 @@ def hier_slicer(page, entity, props, position):
     projs = [proj(col(entity, pr), entity, pr, True) for pr in props]
     vis = {"visualType": "slicer",
            "query": {"queryState": {"Values": {"projections": projs}}},
-           "objects": {"data": [{"properties": {"mode": lit("'Basic'")}}],
-                       # singleSelect false = tick as many boxes as you like, no Ctrl needed
+           # isInvertedSelectionMode with no exclusions = "Select all": every box starts
+           # ticked and unticking one removes just that component.
+           "objects": {"data": [{"properties": {"mode": lit("'Basic'"),
+                                                "isInvertedSelectionMode": lit("true")}}],
+                       # singleSelect false = tick or untick as many boxes as you like, no Ctrl
                        "selection": [{"properties": {"singleSelect": lit("false"),
-                                                     "selectAllCheckboxEnabled": lit("true")}}]},
+                                                     "selectAllCheckboxEnabled": lit("true")}}],
+                       "header": [{"properties": {"show": lit("false")}}],
+                       "general": [{"properties": {}}]},
            "drillFilterOtherVisuals": True}
-    f = [{"name": hid(name, "f"), "field": col(entity, props[-1]), "type": "Categorical"}]
+    f = [{"name": hid(name, "f", pr), "field": col(entity, pr), "type": "Categorical"} for pr in reversed(props)]
     return name, visual(name, position, vis, f)
 
 
@@ -474,7 +491,8 @@ def filled_map(page, position, color_measure, tooltips, title=None):
     cat = col("County", "map_label")
     qs = {"Category": {"projections": [proj(cat, "County", "map_label", True)]}}
     if tooltips:
-        qs["Tooltips"] = {"projections": [proj(f, e, p) for f, e, p in tooltips]}
+        qs["Tooltips"] = {"projections": [proj(t[0], t[1], t[2], display=(t[3] if len(t) > 3 else None))
+                                          for t in tooltips]}
     vis = {"visualType": "filledMap", "query": {"queryState": qs},
            "objects": {"dataPoint": [{"properties": {"fill": GRADIENT(mea("County", color_measure))},
                                       "selector": {"data": [{"dataViewWildcard": {"matchingOption": 1}}]}}]},
@@ -516,7 +534,7 @@ def pillar_bar(page, position):
         "drillFilterOtherVisuals": False}
     # Clicking a county cross-highlights this chart: the full bar stays as the ERCOT
     # average and the darker part is the selected county.
-    titled(vis, "Pillar scores: ERCOT average; click a county to overlay it (darker bar)")
+    titled(vis, "Pillar scores: ERCOT average vs. selected county")
     return name, visual(name, position, vis)
 
 
@@ -585,28 +603,30 @@ def write_report():
         vs.append(slicer(P1, wtable(key), label, pos(8, 4 + i * 74, 395, 70, z),
                          "Dropdown", preset=f"{default}L", single=True))
         z += 1
-    vs.append(textbox(P1, "comp", pos(8, 378, 395, 28, z), "Components (tick the ones you want; none = all)", "11pt", True)); z += 1
+    vs.append(textbox(P1, "comp", pos(8, 378, 395, 28, z), "Components", "11pt", True)); z += 1
     vs.append(hier_slicer(P1, "county_factor_score", ["pillar", "factor_label"], pos(8, 408, 395, 668, z))); z += 1
     vs.append(filled_map(P1, pos(410, 4, 860, 680, z), "My Score",
-                         [(mea("County", "My Rank"), "County", "My Rank"),
-                          (mea("County", "Data coverage %"), "County", "Data coverage %")],
-                         title="Overall score by county (darker = better)")); z += 1
+                         [(mea("County", "My Score"), "County", "My Score", "Overall score"),
+                          (mea("County", "My Rank"), "County", "My Rank", "Rank"),
+                          (mea("County", "Data coverage %"), "County", "Data coverage %", "Data coverage")],
+                         title="County Rank Visual")); z += 1
     vs.append(pillar_bar(P1, pos(1280, 4, 636, 470, z))); z += 1
     vs.append(slicer(P1, "County", "Ozone Status", pos(1280, 484, 310, 200, z), "Basic")); z += 1
     vs.append(slicer(P1, "County", "Has 20-inch+ pipeline", pos(1600, 484, 316, 200, z), "Basic")); z += 1
     tname, tv = table_visual(P1, "top10", pos(410, 692, 1506, 296, z), [
         ("c", "County", "county_name", "County"), ("m", "County", "My Score", "Overall score")]
-        + [("m", "County", f"{label} score") for k, label in PILLARS]
-        + [("m", "County", "My Rank"), ("m", "County", "Data coverage %", "Data coverage")],
+        + [("m", "County", f"{label} score", label) for k, label in PILLARS]
+        + [("m", "County", "My Rank", "Rank"), ("m", "County", "Data coverage %", "Data coverage")],
         ("m", "County", "My Score", "Descending"), title="Top 10 counties")
     tv["filterConfig"] = {"filters": [topn_filter(tname, 10)]}
     vs.append((tname, tv)); z += 1
-    vs.append(textbox(P1, "howto", pos(410, 994, 900, 82, z), "How to use: set a weight (0-10) for each pillar on the left; 0 drops it. "
-                      "Components: nothing ticked = all count. Tick several to use only those (a pillar with none ticked drops out); "
-                      "or tick Select all, then untick what you don't want. Higher score is better. Click a county for its pillar scores; "
-                      "right-click, Drill through, County detail for the numbers. Data coverage below 100% = part of your weight had no data there.", "11pt")); z += 1
-    vs.append(textbox(P1, "asof", pos(1320, 994, 596, 82, z), "Data as of: EPA Green Book Aug 2026; ERCOT interconnection queue Aug 2026; "
-                      "TxGIO parcels 2025; RRC pipelines Sep 30 2026; EIA-860/923 2024.", "10pt")); z += 1
+    vs.append(textbox(P1, "howto", pos(410, 994, 900, 82, z),
+                      "Set how much each pillar matters (0 removes it) and untick any components you don't want. "
+                      "Click a county on the map or in the table to zoom in on it. "
+                      "For the full breakdown, right-click a county and choose Drill through > County detail.", "11pt")); z += 1
+    vs.append(textbox(P1, "asof", pos(1320, 994, 596, 82, z),
+                      "Data: EIA 2024 | ERCOT queue Aug 2026 | EPA Green Book Aug 2026 | "
+                      "RRC pipelines Sep 2026 | TxGIO parcels 2025", "10pt")); z += 1
     write_page(P1, P1, "Score map", vs)
 
     # ---- page 2: one factor at a time
@@ -616,37 +636,37 @@ def write_report():
     vs.append(card(P2, "title", pos(400, 4, 1516, 80, 1001), mea("County", "Layer Title"), "County", "Layer Title"))
     vs.append(filled_map(P2, pos(400, 90, 900, 986, 1002), "Layer Score",
                          [(mea("County", "Layer Raw Value"), "County", "Layer Raw Value")],
-                         title="Score on the selected factor (darker = better)"))
+                         title="Score on this factor (darker = better)"))
     vs.append(table_visual(P2, "layer", pos(1310, 90, 606, 986, 1003), [
-        ("c", "County", "county_name"), ("m", "County", "Layer Raw Value"),
-        ("m", "County", "Layer Score")], ("m", "County", "Layer Score", "Descending")))
+        ("c", "County", "county_name", "County"), ("m", "County", "Layer Raw Value", "Value"),
+        ("m", "County", "Layer Score", "Score")], ("m", "County", "Layer Score", "Descending")))
     write_page(P2, P2, "Explore one factor", vs)
 
     # ---- page 3: county detail (drill-through target)
     vs = []
     vs.append(card(P3, "county", pos(8, 4, 1900, 80, 1000), mea("County", "Detail Title"), "County", "Detail Title"))
     vs.append(table_visual(P3, "factors", pos(8, 90, 700, 986, 1001), [
-        ("c", "county_factor_score", "pillar"), ("c", "county_factor_score", "factor_label"),
-        ("c", "county_factor_score", "raw_value"),
-        ("c", "county_factor_score", "unit"), ("c", "county_factor_score", "factor_score")],
+        ("c", "county_factor_score", "pillar", "Pillar"), ("c", "county_factor_score", "factor_label", "Factor"),
+        ("c", "county_factor_score", "raw_value", "Value"),
+        ("c", "county_factor_score", "unit", "Unit"), ("c", "county_factor_score", "factor_score", "Score")],
         ("c", "county_factor_score", "pillar", "Ascending"), title="Factor scores"))
     vs.append(table_visual(P3, "facts", pos(720, 90, 1196, 160, 1004), [
         ("c", "County", "ozone_class", "Ozone class"),
         ("c", "County", "nox_offset_ratio", "NOx offset ratio"),
-        ("c", "County", "nox_offset_cost_per_tpy", "Offset cost per tpy emitted"),
-        ("c", "County", "nox_credit_price_per_tpy", "Credit price per tpy"),
-        ("c", "County", "nox_credit_tons_traded", "Credit tons traded (2 yrs)"),
+        ("c", "County", "nox_offset_cost_per_tpy", "Offset cost ($ per ton/yr emitted)"),
+        ("c", "County", "nox_credit_price_per_tpy", "Credit price ($ per ton/yr)"),
+        ("c", "County", "nox_credit_tons_traded", "Credits traded, last 2 yrs (tons)"),
         ("c", "County", "lng_terminals", "LNG terminals"),
         ("c", "County", "land_industrial_acres", "Industrial acres"),
         ("c", "County", "land_parcel_coverage", "Parcel data coverage")],
         ("c", "County", "ozone_class", "Ascending"), title="Key facts"))
     vs.append(table_visual(P3, "pipes", pos(720, 260, 1196, 380, 1002), [
-        ("c", "pipeline_segment", "operator_name"), ("c", "pipeline_segment", "system_name"),
-        ("c", "pipeline_segment", "diameter_in"), ("c", "pipeline_segment", "interstate"),
-        ("c", "pipeline_segment", "miles")], ("c", "pipeline_segment", "miles", "Descending"), title="Gas pipelines"))
+        ("c", "pipeline_segment", "operator_name", "Operator"), ("c", "pipeline_segment", "system_name", "System"),
+        ("c", "pipeline_segment", "diameter_in", "Diameter (in)"), ("c", "pipeline_segment", "interstate", "Interstate"),
+        ("c", "pipeline_segment", "miles", "Miles")], ("c", "pipeline_segment", "miles", "Descending"), title="Gas pipelines"))
     vs.append(table_visual(P3, "plants", pos(720, 650, 1196, 426, 1003), [
-        ("c", "plant", "plant_name"), ("c", "plant", "technology"),
-        ("c", "plant", "nameplate_mw"), ("c", "plant", "operating_year")],
+        ("c", "plant", "plant_name", "Plant"), ("c", "plant", "technology", "Technology"),
+        ("c", "plant", "nameplate_mw", "MW"), ("c", "plant", "operating_year", "Year online")],
         ("c", "plant", "nameplate_mw", "Descending"), title="Operating power plants"))
     fname = hid("drill", "county")
     write_page(P3, P3, "County detail", vs, extra={
@@ -660,9 +680,10 @@ def write_report():
     vs = []
     vs.append(slicer(P4, "metric", "pillar", pos(8, 4, 300, 400, 1000), "Basic"))
     vs.append(table_visual(P4, "catalog", pos(320, 4, 1596, 1072, 1001), [
-        ("c", "metric", "pillar"), ("c", "metric", "label"), ("c", "metric", "metric_type"),
-        ("c", "metric", "unit"), ("c", "metric", "better_direction"), ("c", "metric", "source_name"),
-        ("c", "metric", "data_date"), ("c", "metric", "caveat")], ("c", "metric", "pillar", "Ascending")))
+        ("c", "metric", "pillar", "Pillar"), ("c", "metric", "label", "Metric"), ("c", "metric", "metric_type", "Type"),
+        ("c", "metric", "unit", "Unit"), ("c", "metric", "better_direction", "Better when"),
+        ("c", "metric", "source_name", "Source"), ("c", "metric", "data_date", "Data as of"),
+        ("c", "metric", "caveat", "Notes")], ("c", "metric", "pillar", "Ascending")))
     write_page(P4, P4, "Catalog", vs)
 
 

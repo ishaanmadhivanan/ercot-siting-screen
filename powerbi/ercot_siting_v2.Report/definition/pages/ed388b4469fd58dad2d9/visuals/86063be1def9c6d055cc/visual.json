@@ -27,7 +27,8 @@
                 }
               },
               "queryRef": "plant.plant_name",
-              "nativeQueryRef": "plant_name"
+              "nativeQueryRef": "plant_name",
+              "displayName": "Plant"
             },
             {
               "field": {
@@ -41,7 +42,8 @@
                 }
               },
               "queryRef": "plant.technology",
-              "nativeQueryRef": "technology"
+              "nativeQueryRef": "technology",
+              "displayName": "Technology"
             },
             {
               "field": {
@@ -55,7 +57,8 @@
                 }
               },
               "queryRef": "plant.nameplate_mw",
-              "nativeQueryRef": "nameplate_mw"
+              "nativeQueryRef": "nameplate_mw",
+              "displayName": "MW"
             },
             {
               "field": {
@@ -69,7 +72,8 @@
                 }
               },
               "queryRef": "plant.operating_year",
-              "nativeQueryRef": "operating_year"
+              "nativeQueryRef": "operating_year",
+              "displayName": "Year online"
             }
           ]
         }
@@ -124,6 +128,19 @@
               "expr": {
                 "Literal": {
                   "Value": "'Operating power plants'"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "subTitle": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
                 }
               }
             }

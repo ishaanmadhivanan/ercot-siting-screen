@@ -27,7 +27,8 @@
                 }
               },
               "queryRef": "metric.pillar",
-              "nativeQueryRef": "pillar"
+              "nativeQueryRef": "pillar",
+              "displayName": "Pillar"
             },
             {
               "field": {
@@ -41,7 +42,8 @@
                 }
               },
               "queryRef": "metric.label",
-              "nativeQueryRef": "label"
+              "nativeQueryRef": "label",
+              "displayName": "Metric"
             },
             {
               "field": {
@@ -55,7 +57,8 @@
                 }
               },
               "queryRef": "metric.metric_type",
-              "nativeQueryRef": "metric_type"
+              "nativeQueryRef": "metric_type",
+              "displayName": "Type"
             },
             {
               "field": {
@@ -69,7 +72,8 @@
                 }
               },
               "queryRef": "metric.unit",
-              "nativeQueryRef": "unit"
+              "nativeQueryRef": "unit",
+              "displayName": "Unit"
             },
             {
               "field": {
@@ -83,7 +87,8 @@
                 }
               },
               "queryRef": "metric.better_direction",
-              "nativeQueryRef": "better_direction"
+              "nativeQueryRef": "better_direction",
+              "displayName": "Better when"
             },
             {
               "field": {
@@ -97,7 +102,8 @@
                 }
               },
               "queryRef": "metric.source_name",
-              "nativeQueryRef": "source_name"
+              "nativeQueryRef": "source_name",
+              "displayName": "Source"
             },
             {
               "field": {
@@ -111,7 +117,8 @@
                 }
               },
               "queryRef": "metric.data_date",
-              "nativeQueryRef": "data_date"
+              "nativeQueryRef": "data_date",
+              "displayName": "Data as of"
             },
             {
               "field": {
@@ -125,7 +132,8 @@
                 }
               },
               "queryRef": "metric.caveat",
-              "nativeQueryRef": "caveat"
+              "nativeQueryRef": "caveat",
+              "displayName": "Notes"
             }
           ]
         }

@@ -59,6 +59,13 @@
                   "Value": "'Basic'"
                 }
               }
+            },
+            "isInvertedSelectionMode": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
             }
           }
         }
@@ -82,6 +89,24 @@
             }
           }
         }
+      ],
+      "header": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "general": [
+        {
+          "properties": {}
+        }
       ]
     },
     "drillFilterOtherVisuals": true
@@ -89,7 +114,7 @@
   "filterConfig": {
     "filters": [
       {
-        "name": "6463ccb3d528f3a48c58",
+        "name": "6cbb1f5db4ef3ed46ee7",
         "field": {
           "Column": {
             "Expression": {
@@ -98,6 +123,20 @@
               }
             },
             "Property": "factor_label"
+          }
+        },
+        "type": "Categorical"
+      },
+      {
+        "name": "9c61822523ab9287e7a6",
+        "field": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "county_factor_score"
+              }
+            },
+            "Property": "pillar"
           }
         },
         "type": "Categorical"

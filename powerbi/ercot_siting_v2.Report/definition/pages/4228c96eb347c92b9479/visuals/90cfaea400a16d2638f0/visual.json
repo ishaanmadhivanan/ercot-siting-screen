@@ -134,7 +134,20 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'Score on the selected factor (darker = better)'"
+                  "Value": "'Score on this factor (darker = better)'"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "subTitle": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
                 }
               }
             }

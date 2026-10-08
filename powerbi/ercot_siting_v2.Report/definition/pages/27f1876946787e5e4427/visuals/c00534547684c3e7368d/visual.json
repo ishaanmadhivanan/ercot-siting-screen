@@ -20,7 +20,7 @@
               {
                 "textRuns": [
                   {
-                    "value": "Data as of: EPA Green Book Aug 2026; ERCOT interconnection queue Aug 2026; TxGIO parcels 2025; RRC pipelines Sep 30 2026; EIA-860/923 2024.",
+                    "value": "Data: EIA 2024 | ERCOT queue Aug 2026 | EPA Green Book Aug 2026 | RRC pipelines Sep 2026 | TxGIO parcels 2025",
                     "textStyle": {
                       "fontSize": "10pt"
                     }

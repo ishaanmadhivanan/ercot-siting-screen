@@ -85,7 +85,20 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'Pillar scores: ERCOT average; click a county to overlay it (darker bar)'"
+                  "Value": "'Pillar scores: ERCOT average vs. selected county'"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "subTitle": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
                 }
               }
             }

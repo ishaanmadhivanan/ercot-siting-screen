@@ -27,7 +27,8 @@
                 }
               },
               "queryRef": "pipeline_segment.operator_name",
-              "nativeQueryRef": "operator_name"
+              "nativeQueryRef": "operator_name",
+              "displayName": "Operator"
             },
             {
               "field": {
@@ -41,7 +42,8 @@
                 }
               },
               "queryRef": "pipeline_segment.system_name",
-              "nativeQueryRef": "system_name"
+              "nativeQueryRef": "system_name",
+              "displayName": "System"
             },
             {
               "field": {
@@ -55,7 +57,8 @@
                 }
               },
               "queryRef": "pipeline_segment.diameter_in",
-              "nativeQueryRef": "diameter_in"
+              "nativeQueryRef": "diameter_in",
+              "displayName": "Diameter (in)"
             },
             {
               "field": {
@@ -69,7 +72,8 @@
                 }
               },
               "queryRef": "pipeline_segment.interstate",
-              "nativeQueryRef": "interstate"
+              "nativeQueryRef": "interstate",
+              "displayName": "Interstate"
             },
             {
               "field": {
@@ -83,7 +87,8 @@
                 }
               },
               "queryRef": "pipeline_segment.miles",
-              "nativeQueryRef": "miles"
+              "nativeQueryRef": "miles",
+              "displayName": "Miles"
             }
           ]
         }
@@ -138,6 +143,19 @@
               "expr": {
                 "Literal": {
                   "Value": "'Gas pipelines'"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "subTitle": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
                 }
               }
             }

@@ -57,7 +57,8 @@
                 }
               },
               "queryRef": "County.Gas supply score",
-              "nativeQueryRef": "Gas supply score"
+              "nativeQueryRef": "Gas supply score",
+              "displayName": "Gas supply"
             },
             {
               "field": {
@@ -71,7 +72,8 @@
                 }
               },
               "queryRef": "County.Grid connection score",
-              "nativeQueryRef": "Grid connection score"
+              "nativeQueryRef": "Grid connection score",
+              "displayName": "Grid connection"
             },
             {
               "field": {
@@ -85,7 +87,8 @@
                 }
               },
               "queryRef": "County.Site control score",
-              "nativeQueryRef": "Site control score"
+              "nativeQueryRef": "Site control score",
+              "displayName": "Site control"
             },
             {
               "field": {
@@ -99,7 +102,8 @@
                 }
               },
               "queryRef": "County.Air permit score",
-              "nativeQueryRef": "Air permit score"
+              "nativeQueryRef": "Air permit score",
+              "displayName": "Air permit"
             },
             {
               "field": {
@@ -113,7 +117,8 @@
                 }
               },
               "queryRef": "County.Community score",
-              "nativeQueryRef": "Community score"
+              "nativeQueryRef": "Community score",
+              "displayName": "Community"
             },
             {
               "field": {
@@ -127,7 +132,8 @@
                 }
               },
               "queryRef": "County.My Rank",
-              "nativeQueryRef": "My Rank"
+              "nativeQueryRef": "My Rank",
+              "displayName": "Rank"
             },
             {
               "field": {
@@ -197,6 +203,19 @@
               "expr": {
                 "Literal": {
                   "Value": "'Top 10 counties'"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "subTitle": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
                 }
               }
             }

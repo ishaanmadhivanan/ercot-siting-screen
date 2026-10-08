@@ -210,13 +210,13 @@ table County
 		formatString: #,##0.00
 
 	measure 'Layer Title' = ```
-			SELECTEDVALUE ( county_factor_score[factor_label], "Pick one factor on the left" )
+			SELECTEDVALUE ( county_factor_score[factor_label], "Pick a factor on the left" )
 			    & IF ( HASONEVALUE ( county_factor_score[unit] ), " (" & SELECTEDVALUE ( county_factor_score[unit] ) & ")", "" )
 			```
 
 	measure 'Detail Title' = ```
 			IF ( HASONEVALUE ( County[county_name] ), SELECTEDVALUE ( County[county_name] ) & " County",
-			     "No county selected: on Score map, right-click a county, Drill through, County detail" )
+			     "Right-click a county on the Score map and choose Drill through > County detail" )
 			```
 
 	measure 'Pipe Miles' = ```

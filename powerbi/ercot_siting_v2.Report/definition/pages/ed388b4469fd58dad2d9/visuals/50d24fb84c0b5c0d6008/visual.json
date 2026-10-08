@@ -27,7 +27,8 @@
                 }
               },
               "queryRef": "county_factor_score.pillar",
-              "nativeQueryRef": "pillar"
+              "nativeQueryRef": "pillar",
+              "displayName": "Pillar"
             },
             {
               "field": {
@@ -41,7 +42,8 @@
                 }
               },
               "queryRef": "county_factor_score.factor_label",
-              "nativeQueryRef": "factor_label"
+              "nativeQueryRef": "factor_label",
+              "displayName": "Factor"
             },
             {
               "field": {
@@ -55,7 +57,8 @@
                 }
               },
               "queryRef": "county_factor_score.raw_value",
-              "nativeQueryRef": "raw_value"
+              "nativeQueryRef": "raw_value",
+              "displayName": "Value"
             },
             {
               "field": {
@@ -69,7 +72,8 @@
                 }
               },
               "queryRef": "county_factor_score.unit",
-              "nativeQueryRef": "unit"
+              "nativeQueryRef": "unit",
+              "displayName": "Unit"
             },
             {
               "field": {
@@ -83,7 +87,8 @@
                 }
               },
               "queryRef": "county_factor_score.factor_score",
-              "nativeQueryRef": "factor_score"
+              "nativeQueryRef": "factor_score",
+              "displayName": "Score"
             }
           ]
         }
@@ -138,6 +143,19 @@
               "expr": {
                 "Literal": {
                   "Value": "'Factor scores'"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "subTitle": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
                 }
               }
             }

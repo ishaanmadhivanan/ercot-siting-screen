@@ -1,0 +1,11 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "SemanticModel",
+    "displayName": "ercot_siting_v2"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "fabc518c-9f47-473c-9d0b-0128e77d1b49"
+  }
+}

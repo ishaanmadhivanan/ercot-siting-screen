@@ -58,7 +58,7 @@
               },
               "queryRef": "County.nox_offset_cost_per_tpy",
               "nativeQueryRef": "nox_offset_cost_per_tpy",
-              "displayName": "Offset cost per tpy emitted"
+              "displayName": "Offset cost ($ per ton/yr emitted)"
             },
             {
               "field": {
@@ -73,7 +73,7 @@
               },
               "queryRef": "County.nox_credit_price_per_tpy",
               "nativeQueryRef": "nox_credit_price_per_tpy",
-              "displayName": "Credit price per tpy"
+              "displayName": "Credit price ($ per ton/yr)"
             },
             {
               "field": {
@@ -88,7 +88,7 @@
               },
               "queryRef": "County.nox_credit_tons_traded",
               "nativeQueryRef": "nox_credit_tons_traded",
-              "displayName": "Credit tons traded (2 yrs)"
+              "displayName": "Credits traded, last 2 yrs (tons)"
             },
             {
               "field": {
@@ -188,6 +188,19 @@
               "expr": {
                 "Literal": {
                   "Value": "'Key facts'"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "subTitle": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
                 }
               }
             }

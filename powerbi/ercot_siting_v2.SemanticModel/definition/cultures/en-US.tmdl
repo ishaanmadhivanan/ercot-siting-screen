@@ -1,0 +1,872 @@
+cultureInfo en-US
+
+	linguisticMetadata =
+			{
+			  "Version": "2.0.0",
+			  "Language": "en-US",
+			  "Entities": {
+			    "county.county_name": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "County",
+			          "ConceptualProperty": "county_name"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "County": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "county.my_score": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "County",
+			          "ConceptualProperty": "My Score"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Overall score": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "county.gas_supply_score": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "County",
+			          "ConceptualProperty": "Gas supply score"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Gas supply": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "county.grid_connection_score": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "County",
+			          "ConceptualProperty": "Grid connection score"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Grid connection": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "county.site_control_score": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "County",
+			          "ConceptualProperty": "Site control score"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Site control": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "county.air_permit_score": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "County",
+			          "ConceptualProperty": "Air permit score"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Air permit": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "county.community_score": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "County",
+			          "ConceptualProperty": "Community score"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Community": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "county.my_rank": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "County",
+			          "ConceptualProperty": "My Rank"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Rank": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "county.data_coverage_": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "County",
+			          "ConceptualProperty": "Data coverage %"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Data coverage": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "county.layer_raw_value": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "County",
+			          "ConceptualProperty": "Layer Raw Value"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Value": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "county.layer_score": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "County",
+			          "ConceptualProperty": "Layer Score"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Score": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "county.ozone_class": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "County",
+			          "ConceptualProperty": "ozone_class"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Ozone class": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "county.nox_offset_ratio": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "County",
+			          "ConceptualProperty": "nox_offset_ratio"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "NOx offset ratio": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "county.nox_offset_cost_per_tpy": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "County",
+			          "ConceptualProperty": "nox_offset_cost_per_tpy"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Offset cost ($ per ton/yr emitted)": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "county.nox_credit_price_per_tpy": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "County",
+			          "ConceptualProperty": "nox_credit_price_per_tpy"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Credit price ($ per ton/yr)": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "county.nox_credit_tons_traded": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "County",
+			          "ConceptualProperty": "nox_credit_tons_traded"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Credits traded, last 2 yrs (tons)": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "county.lng_terminals": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "County",
+			          "ConceptualProperty": "lng_terminals"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "LNG terminals": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "county.land_industrial_acres": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "County",
+			          "ConceptualProperty": "land_industrial_acres"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Industrial acres": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "county.land_parcel_coverage": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "County",
+			          "ConceptualProperty": "land_parcel_coverage"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Parcel data coverage": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "county_factor_score.pillar": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "county_factor_score",
+			          "ConceptualProperty": "pillar"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Pillar": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "county_factor_score.factor_label": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "county_factor_score",
+			          "ConceptualProperty": "factor_label"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Factor": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "county_factor_score.raw_value": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "county_factor_score",
+			          "ConceptualProperty": "raw_value"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Value": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "county_factor_score.unit": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "county_factor_score",
+			          "ConceptualProperty": "unit"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Unit": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "county_factor_score.factor_score": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "county_factor_score",
+			          "ConceptualProperty": "factor_score"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Score": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "plant.plant_name": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "plant",
+			          "ConceptualProperty": "plant_name"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Plant": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "plant.technology": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "plant",
+			          "ConceptualProperty": "technology"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Technology": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "plant.nameplate_mw": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "plant",
+			          "ConceptualProperty": "nameplate_mw"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "MW": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "plant.operating_year": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "plant",
+			          "ConceptualProperty": "operating_year"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Year online": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "pipeline_segment.operator_name": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "pipeline_segment",
+			          "ConceptualProperty": "operator_name"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Operator": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "pipeline_segment.system_name": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "pipeline_segment",
+			          "ConceptualProperty": "system_name"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "System": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "pipeline_segment.diameter_in": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "pipeline_segment",
+			          "ConceptualProperty": "diameter_in"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Diameter (in)": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "pipeline_segment.interstate": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "pipeline_segment",
+			          "ConceptualProperty": "interstate"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Interstate": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "pipeline_segment.miles": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "pipeline_segment",
+			          "ConceptualProperty": "miles"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Miles": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "metric.pillar": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "metric",
+			          "ConceptualProperty": "pillar"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Pillar": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "metric.label": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "metric",
+			          "ConceptualProperty": "label"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Metric": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "metric.metric_type": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "metric",
+			          "ConceptualProperty": "metric_type"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Type": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "metric.unit": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "metric",
+			          "ConceptualProperty": "unit"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Unit": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "metric.better_direction": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "metric",
+			          "ConceptualProperty": "better_direction"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Better when": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "metric.source_name": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "metric",
+			          "ConceptualProperty": "source_name"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Source": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "metric.data_date": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "metric",
+			          "ConceptualProperty": "data_date"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Data as of": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "metric.caveat": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "metric",
+			          "ConceptualProperty": "caveat"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Notes": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    }
+			  }
+			}
+		contentType: json
+

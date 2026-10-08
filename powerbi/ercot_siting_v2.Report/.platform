@@ -1,0 +1,11 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "Report",
+    "displayName": "ercot_siting_v2"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "252c84f5-56a6-454f-8b09-bcdc4e8aa565"
+  }
+}

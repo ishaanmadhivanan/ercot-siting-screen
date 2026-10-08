@@ -1,0 +1,152 @@
+{
+  "version": "1.1.0",
+  "diagrams": [
+    {
+      "ordinal": 0,
+      "scrollPosition": {
+        "x": 0,
+        "y": 0
+      },
+      "nodes": [
+        {
+          "location": {
+            "x": 334.18502560430511,
+            "y": 143.18647543031165
+          },
+          "nodeIndex": "County",
+          "nodeLineageTag": "a8687fc7-477b-4b13-8ae1-f22f58a2addf",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 50,
+            "y": -4.2159779763873075
+          },
+          "nodeIndex": "county_factor_score",
+          "nodeLineageTag": "dd1740ed-2c43-4699-9942-8fcd212e70da",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 852.34602682458512,
+            "y": 269.69614951621924
+          },
+          "nodeIndex": "metric",
+          "nodeLineageTag": "e9ba3d1b-90b8-47ee-84a5-36ba413b2a02",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 618.34602682458512,
+            "y": -50
+          },
+          "nodeIndex": "pipeline_segment",
+          "nodeLineageTag": "c4a273f6-e6cb-4c6f-81c2-0470252cd057",
+          "size": {
+            "height": 224,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 383.90026112472935,
+            "y": 493.39229903243836
+          },
+          "nodeIndex": "plant",
+          "nodeLineageTag": "60994a07-2635-462f-9930-b6046af3fdad",
+          "size": {
+            "height": 296,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 1136.3460268245851,
+            "y": 307.69614951621924
+          },
+          "nodeIndex": "W air",
+          "nodeLineageTag": "133ddd50-fae6-4f82-94c0-4f542fbd3470",
+          "size": {
+            "height": 224,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 1420.3460268245851,
+            "y": 307.69614951621924
+          },
+          "nodeIndex": "W community",
+          "nodeLineageTag": "73217748-2b9a-4d0c-9dec-5901295d0807",
+          "size": {
+            "height": 224,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 1704.3460268245851,
+            "y": 307.69614951621924
+          },
+          "nodeIndex": "W gas",
+          "nodeLineageTag": "78dc17e1-c195-4ec9-8b44-45b9a3b66c36",
+          "size": {
+            "height": 224,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 1988.3460268245851,
+            "y": 307.69614951621924
+          },
+          "nodeIndex": "W grid",
+          "nodeLineageTag": "82121adb-203e-4aca-b719-84d8cba08613",
+          "size": {
+            "height": 224,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 2272.3460268245854,
+            "y": 307.69614951621924
+          },
+          "nodeIndex": "W site",
+          "nodeLineageTag": "c1679f73-08ca-496f-b1cc-303b90324d59",
+          "size": {
+            "height": 224,
+            "width": 234
+          },
+          "zIndex": 0
+        }
+      ],
+      "name": "All tables",
+      "zoomValue": 100,
+      "pinKeyFieldsToTop": false,
+      "showExtraHeaderInfo": false,
+      "hideKeyFieldsWhenCollapsed": false,
+      "tablesLocked": false
+    }
+  ],
+  "selectedDiagram": "All tables",
+  "defaultDiagram": "All tables"
+}

@@ -42,11 +42,27 @@
                       "Entity": "County"
                     }
                   },
+                  "Property": "My Score"
+                }
+              },
+              "queryRef": "County.My Score",
+              "nativeQueryRef": "My Score",
+              "displayName": "Overall score"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "County"
+                    }
+                  },
                   "Property": "My Rank"
                 }
               },
               "queryRef": "County.My Rank",
-              "nativeQueryRef": "My Rank"
+              "nativeQueryRef": "My Rank",
+              "displayName": "Rank"
             },
             {
               "field": {
@@ -60,7 +76,8 @@
                 }
               },
               "queryRef": "County.Data coverage %",
-              "nativeQueryRef": "Data coverage %"
+              "nativeQueryRef": "Data coverage %",
+              "displayName": "Data coverage"
             }
           ]
         }
@@ -148,7 +165,20 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'Overall score by county (darker = better)'"
+                  "Value": "'County Rank Visual'"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "subTitle": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
                 }
               }
             }

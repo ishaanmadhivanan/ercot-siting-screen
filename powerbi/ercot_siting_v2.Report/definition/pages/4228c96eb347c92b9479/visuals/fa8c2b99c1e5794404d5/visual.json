@@ -27,7 +27,8 @@
                 }
               },
               "queryRef": "County.county_name",
-              "nativeQueryRef": "county_name"
+              "nativeQueryRef": "county_name",
+              "displayName": "County"
             },
             {
               "field": {
@@ -41,7 +42,8 @@
                 }
               },
               "queryRef": "County.Layer Raw Value",
-              "nativeQueryRef": "Layer Raw Value"
+              "nativeQueryRef": "Layer Raw Value",
+              "displayName": "Value"
             },
             {
               "field": {
@@ -55,7 +57,8 @@
                 }
               },
               "queryRef": "County.Layer Score",
-              "nativeQueryRef": "Layer Score"
+              "nativeQueryRef": "Layer Score",
+              "displayName": "Score"
             }
           ]
         }
