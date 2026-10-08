@@ -20,7 +20,7 @@
               {
                 "textRuns": [
                   {
-                    "value": "Components (all on; click to narrow)",
+                    "value": "Components (tick the ones you want; none = all)",
                     "textStyle": {
                       "fontSize": "11pt",
                       "fontWeight": "bold"

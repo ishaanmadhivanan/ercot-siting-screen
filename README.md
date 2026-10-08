@@ -6,6 +6,8 @@ It scores all 195 ERCOT counties on the things a developer actually checks (gas 
 
 ![Score map](docs/score_map.png)
 
+*Figure 1. Score map with all five pillars weighted equally. The map shades each county by overall score (darker = better); the bar chart shows the ERCOT-average pillar scores, with a clicked county overlaid as a darker bar; the table lists the top 10 counties and how much of the user's weighting had data for each.*
+
 ---
 
 ## What it does

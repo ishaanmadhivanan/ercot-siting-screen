@@ -427,7 +427,10 @@ def hier_slicer(page, entity, props, position):
     projs = [proj(col(entity, pr), entity, pr, True) for pr in props]
     vis = {"visualType": "slicer",
            "query": {"queryState": {"Values": {"projections": projs}}},
-           "objects": {"data": [{"properties": {"mode": lit("'Basic'")}}]},
+           "objects": {"data": [{"properties": {"mode": lit("'Basic'")}}],
+                       # singleSelect false = tick as many boxes as you like, no Ctrl needed
+                       "selection": [{"properties": {"singleSelect": lit("false"),
+                                                     "selectAllCheckboxEnabled": lit("true")}}]},
            "drillFilterOtherVisuals": True}
     f = [{"name": hid(name, "f"), "field": col(entity, props[-1]), "type": "Categorical"}]
     return name, visual(name, position, vis, f)
@@ -511,7 +514,9 @@ def pillar_bar(page, position):
                        "Y": {"projections": [proj(val, "County", "Pillar Score")]}},
         "sortDefinition": {"sort": [{"field": cat, "direction": "Ascending"}], "isDefaultSort": True}},
         "drillFilterOtherVisuals": False}
-    titled(vis, "Pillar scores (0-100)")
+    # Clicking a county cross-highlights this chart: the full bar stays as the ERCOT
+    # average and the darker part is the selected county.
+    titled(vis, "Pillar scores: ERCOT average; click a county to overlay it (darker bar)")
     return name, visual(name, position, vis)
 
 
@@ -580,14 +585,13 @@ def write_report():
         vs.append(slicer(P1, wtable(key), label, pos(8, 4 + i * 74, 395, 70, z),
                          "Dropdown", preset=f"{default}L", single=True))
         z += 1
-    vs.append(textbox(P1, "comp", pos(8, 378, 395, 28, z), "Components (all on; click to narrow)", "11pt", True)); z += 1
+    vs.append(textbox(P1, "comp", pos(8, 378, 395, 28, z), "Components (tick the ones you want; none = all)", "11pt", True)); z += 1
     vs.append(hier_slicer(P1, "county_factor_score", ["pillar", "factor_label"], pos(8, 408, 395, 668, z))); z += 1
     vs.append(filled_map(P1, pos(410, 4, 860, 680, z), "My Score",
                          [(mea("County", "My Rank"), "County", "My Rank"),
                           (mea("County", "Data coverage %"), "County", "Data coverage %")],
                          title="Overall score by county (darker = better)")); z += 1
-    vs.append(textbox(P1, "barhead", pos(1280, 4, 636, 28, z), "Pillar scores: click a county on the map", "11pt", True)); z += 1
-    vs.append(pillar_bar(P1, pos(1280, 34, 636, 440, z))); z += 1
+    vs.append(pillar_bar(P1, pos(1280, 4, 636, 470, z))); z += 1
     vs.append(slicer(P1, "County", "Ozone Status", pos(1280, 484, 310, 200, z), "Basic")); z += 1
     vs.append(slicer(P1, "County", "Has 20-inch+ pipeline", pos(1600, 484, 316, 200, z), "Basic")); z += 1
     tname, tv = table_visual(P1, "top10", pos(410, 692, 1506, 296, z), [
@@ -598,7 +602,8 @@ def write_report():
     tv["filterConfig"] = {"filters": [topn_filter(tname, 10)]}
     vs.append((tname, tv)); z += 1
     vs.append(textbox(P1, "howto", pos(410, 994, 900, 82, z), "How to use: set a weight (0-10) for each pillar on the left; 0 drops it. "
-                      "Tick components to narrow what counts inside a pillar. Higher score is better. Click a county for its pillar scores; "
+                      "Components: nothing ticked = all count. Tick several to use only those (a pillar with none ticked drops out); "
+                      "or tick Select all, then untick what you don't want. Higher score is better. Click a county for its pillar scores; "
                       "right-click, Drill through, County detail for the numbers. Data coverage below 100% = part of your weight had no data there.", "11pt")); z += 1
     vs.append(textbox(P1, "asof", pos(1320, 994, 596, 82, z), "Data as of: EPA Green Book Aug 2026; ERCOT interconnection queue Aug 2026; "
                       "TxGIO parcels 2025; RRC pipelines Sep 30 2026; EIA-860/923 2024.", "10pt")); z += 1
