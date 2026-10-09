@@ -3,10 +3,10 @@
   "name": "81acab844dd99061437d",
   "position": {
     "x": 8,
-    "y": 226,
+    "y": 280,
     "z": 1003,
     "width": 395,
-    "height": 70,
+    "height": 88,
     "tabOrder": 1003
   },
   "visual": {
@@ -41,20 +41,14 @@
             "mode": {
               "expr": {
                 "Literal": {
-                  "Value": "'Dropdown'"
+                  "Value": "'Single'"
                 }
               }
-            }
-          }
-        }
-      ],
-      "selection": [
-        {
-          "properties": {
-            "strictSingleSelect": {
+            },
+            "numericStart": {
               "expr": {
                 "Literal": {
-                  "Value": "true"
+                  "Value": "5D"
                 }
               }
             }
@@ -77,28 +71,23 @@
                 "Where": [
                   {
                     "Condition": {
-                      "In": {
-                        "Expressions": [
-                          {
-                            "Column": {
-                              "Expression": {
-                                "SourceRef": {
-                                  "Source": "s"
-                                }
-                              },
-                              "Property": "Air permit"
-                            }
-                          }
-                        ],
-                        "Values": [
-                          [
-                            {
-                              "Literal": {
-                                "Value": "5L"
+                      "Comparison": {
+                        "ComparisonKind": 0,
+                        "Left": {
+                          "Column": {
+                            "Expression": {
+                              "SourceRef": {
+                                "Source": "s"
                               }
-                            }
-                          ]
-                        ]
+                            },
+                            "Property": "Air permit"
+                          }
+                        },
+                        "Right": {
+                          "Literal": {
+                            "Value": "5D"
+                          }
+                        }
                       }
                     }
                   }

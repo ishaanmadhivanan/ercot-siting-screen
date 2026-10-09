@@ -128,21 +128,6 @@
                       "Entity": "County"
                     }
                   },
-                  "Property": "My Rank"
-                }
-              },
-              "queryRef": "County.My Rank",
-              "nativeQueryRef": "My Rank",
-              "displayName": "Rank"
-            },
-            {
-              "field": {
-                "Measure": {
-                  "Expression": {
-                    "SourceRef": {
-                      "Entity": "County"
-                    }
-                  },
                   "Property": "Data coverage %"
                 }
               },

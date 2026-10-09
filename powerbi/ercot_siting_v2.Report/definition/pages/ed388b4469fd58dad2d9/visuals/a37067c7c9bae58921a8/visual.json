@@ -133,7 +133,7 @@
               },
               "queryRef": "County.land_parcel_coverage",
               "nativeQueryRef": "land_parcel_coverage",
-              "displayName": "Parcel data coverage"
+              "displayName": "Parcel acres vs. county area"
             }
           ]
         }

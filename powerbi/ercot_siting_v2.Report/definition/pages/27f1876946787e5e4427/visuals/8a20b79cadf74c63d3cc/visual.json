@@ -3,10 +3,10 @@
   "name": "8a20b79cadf74c63d3cc",
   "position": {
     "x": 8,
-    "y": 300,
+    "y": 372,
     "z": 1004,
     "width": 395,
-    "height": 70,
+    "height": 88,
     "tabOrder": 1004
   },
   "visual": {
@@ -41,20 +41,14 @@
             "mode": {
               "expr": {
                 "Literal": {
-                  "Value": "'Dropdown'"
+                  "Value": "'Single'"
                 }
               }
-            }
-          }
-        }
-      ],
-      "selection": [
-        {
-          "properties": {
-            "strictSingleSelect": {
+            },
+            "numericStart": {
               "expr": {
                 "Literal": {
-                  "Value": "true"
+                  "Value": "5D"
                 }
               }
             }
@@ -77,28 +71,23 @@
                 "Where": [
                   {
                     "Condition": {
-                      "In": {
-                        "Expressions": [
-                          {
-                            "Column": {
-                              "Expression": {
-                                "SourceRef": {
-                                  "Source": "s"
-                                }
-                              },
-                              "Property": "Community"
-                            }
-                          }
-                        ],
-                        "Values": [
-                          [
-                            {
-                              "Literal": {
-                                "Value": "5L"
+                      "Comparison": {
+                        "ComparisonKind": 0,
+                        "Left": {
+                          "Column": {
+                            "Expression": {
+                              "SourceRef": {
+                                "Source": "s"
                               }
-                            }
-                          ]
-                        ]
+                            },
+                            "Property": "Community"
+                          }
+                        },
+                        "Right": {
+                          "Literal": {
+                            "Value": "5D"
+                          }
+                        }
                       }
                     }
                   }

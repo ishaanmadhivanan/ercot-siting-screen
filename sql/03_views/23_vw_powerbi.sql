@@ -26,7 +26,10 @@ SELECT g.county_fips, g.plant_code, g.generator_id, g.plant_name, g.technology, 
 GO
 
 CREATE OR ALTER VIEW rpt.pbi_metric AS
-SELECT metric_key, label, category, pillar, metric_type, unit, better_direction, source_name, data_date, caveat FROM dim.metric;
+SELECT metric_key, label, category,
+       COALESCE(pillar, CASE WHEN metric_type = 'score' THEN 'Not in score' ELSE 'Background info' END) AS pillar,
+       metric_type, unit, better_direction, source_name, data_date, caveat
+FROM dim.metric;
 GO
 
 -- Check: row counts (expect County 195, factor scores ~3,500, metric 40+).

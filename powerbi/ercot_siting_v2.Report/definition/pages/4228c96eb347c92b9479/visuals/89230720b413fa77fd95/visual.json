@@ -28,6 +28,7 @@
               },
               "queryRef": "county_factor_score.factor_label",
               "nativeQueryRef": "factor_label",
+              "displayName": "Factor",
               "active": true
             }
           ]

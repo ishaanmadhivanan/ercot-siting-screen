@@ -20,7 +20,7 @@
               {
                 "textRuns": [
                   {
-                    "value": "Set how much each pillar matters (0 removes it) and untick any components you don't want. Click a county on the map or in the table to zoom in on it. For the full breakdown, right-click a county and choose Drill through > County detail.",
+                    "value": "Set how much each pillar matters (0 removes it) and untick any components you don't want. Click a county on the map or in the table to zoom in on it. For the full breakdown of any county, go to County detail and pick it from the box.",
                     "textStyle": {
                       "fontSize": "11pt"
                     }

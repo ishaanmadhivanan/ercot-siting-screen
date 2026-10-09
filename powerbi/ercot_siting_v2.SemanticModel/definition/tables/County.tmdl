@@ -216,7 +216,7 @@ table County
 
 	measure 'Detail Title' = ```
 			IF ( HASONEVALUE ( County[county_name] ), SELECTEDVALUE ( County[county_name] ) & " County",
-			     "Right-click a county on the Score map and choose Drill through > County detail" )
+			     "Pick a county in the box on the left" )
 			```
 
 	measure 'Pipe Miles' = ```

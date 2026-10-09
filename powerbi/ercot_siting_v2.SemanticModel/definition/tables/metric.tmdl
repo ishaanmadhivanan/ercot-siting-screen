@@ -45,6 +45,7 @@ table metric
 
 	column data_date
 		dataType: dateTime
+		formatString: mmm yyyy
 		summarizeBy: none
 		sourceColumn: data_date
 

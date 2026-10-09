@@ -393,7 +393,7 @@ cultureInfo en-US
 			      "State": "Generated",
 			      "Terms": [
 			        {
-			          "Parcel data coverage": {
+			          "Parcel acres vs. county area": {
 			            "State": "Suggested",
 			            "Source": {
 			              "Type": "External",

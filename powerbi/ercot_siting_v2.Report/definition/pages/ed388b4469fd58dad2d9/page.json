@@ -4,44 +4,5 @@
   "displayName": "County detail",
   "displayOption": "FitToPage",
   "height": 1080,
-  "width": 1920,
-  "filterConfig": {
-    "filters": [
-      {
-        "name": "58fe885e2f91b68e82c5",
-        "field": {
-          "Column": {
-            "Expression": {
-              "SourceRef": {
-                "Entity": "County"
-              }
-            },
-            "Property": "county_name"
-          }
-        },
-        "type": "Categorical"
-      }
-    ]
-  },
-  "pageBinding": {
-    "name": "43b55838c76c120b2f52",
-    "type": "Drillthrough",
-    "referenceScope": "Default",
-    "parameters": [
-      {
-        "name": "40213333f32c0a418c9f",
-        "boundFilter": "58fe885e2f91b68e82c5",
-        "fieldExpr": {
-          "Column": {
-            "Expression": {
-              "SourceRef": {
-                "Entity": "County"
-              }
-            },
-            "Property": "county_name"
-          }
-        }
-      }
-    ]
-  }
+  "width": 1920
 }

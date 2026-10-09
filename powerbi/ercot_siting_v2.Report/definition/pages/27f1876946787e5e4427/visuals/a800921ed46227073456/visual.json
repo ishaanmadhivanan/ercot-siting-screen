@@ -3,10 +3,10 @@
   "name": "a800921ed46227073456",
   "position": {
     "x": 8,
-    "y": 152,
+    "y": 188,
     "z": 1002,
     "width": 395,
-    "height": 70,
+    "height": 88,
     "tabOrder": 1002
   },
   "visual": {
@@ -41,20 +41,14 @@
             "mode": {
               "expr": {
                 "Literal": {
-                  "Value": "'Dropdown'"
+                  "Value": "'Single'"
                 }
               }
-            }
-          }
-        }
-      ],
-      "selection": [
-        {
-          "properties": {
-            "strictSingleSelect": {
+            },
+            "numericStart": {
               "expr": {
                 "Literal": {
-                  "Value": "true"
+                  "Value": "5D"
                 }
               }
             }
@@ -77,28 +71,23 @@
                 "Where": [
                   {
                     "Condition": {
-                      "In": {
-                        "Expressions": [
-                          {
-                            "Column": {
-                              "Expression": {
-                                "SourceRef": {
-                                  "Source": "s"
-                                }
-                              },
-                              "Property": "Site control"
-                            }
-                          }
-                        ],
-                        "Values": [
-                          [
-                            {
-                              "Literal": {
-                                "Value": "5L"
+                      "Comparison": {
+                        "ComparisonKind": 0,
+                        "Left": {
+                          "Column": {
+                            "Expression": {
+                              "SourceRef": {
+                                "Source": "s"
                               }
-                            }
-                          ]
-                        ]
+                            },
+                            "Property": "Site control"
+                          }
+                        },
+                        "Right": {
+                          "Literal": {
+                            "Value": "5D"
+                          }
+                        }
                       }
                     }
                   }
