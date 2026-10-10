@@ -8,6 +8,11 @@ Built with SQL Server, Python and Power BI, using only public data.
 
 *Figure 1. The main page with all five pillars weighted equally. Darker counties score higher. The bar chart shows the ERCOT average for each pillar, with the selected county overlaid. The table lists the top 10 counties.*
 
+## See it without building anything
+
+- **Interactive report:** download `ercot_siting_screen.pbix` from the [latest release](https://github.com/ishaanmadhivanan/ercot-siting-screen/releases/latest) and open it in [Power BI Desktop](https://www.microsoft.com/en-us/power-platform/products/power-bi/desktop) (free, Windows only). The data is saved inside the file, so the sliders, map and county pages all work. Refresh won't, since that needs the database.
+- **Quick look:** [all four report pages as a PDF](docs/ercot_siting_report.pdf), with default weights.
+
 ## How the score works
 
 Each county gets a 0–100 score on 17 factors, grouped into five pillars:
@@ -82,7 +87,7 @@ data/processed/   script output (not in git)
 sql/              tables, loads, scoring views, checks
 scripts/          Python extract scripts and the Power BI generator
 powerbi/          Power BI project
-docs/             methodology and screenshot
+docs/             methodology, screenshot and PDF of the report
 ```
 
 ## Next

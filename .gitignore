@@ -24,3 +24,6 @@ Thumbs.db
 **/.pbi/localSettings.json
 **/.pbi/cache.abf
 powerbi/ercot_siting.pbix
+
+# Snapshot files uploaded to GitHub releases, not tracked in git
+release/
