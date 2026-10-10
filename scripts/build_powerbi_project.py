@@ -151,10 +151,16 @@ TABLES = {
         sql="SELECT metric_key, label, category, "
             "COALESCE(pillar, CASE WHEN metric_type = 'score' THEN 'Not in score' ELSE 'Background info' END) AS pillar, "
             "metric_type, unit, better_direction, source_name, "
-            "data_date, caveat FROM dim.metric",
+            "data_date, caveat, how_scored FROM dim.metric",
         cols=[("metric_key", "string"), ("label", "string"), ("category", "string"), ("pillar", "string"),
               ("metric_type", "string"), ("unit", "string"), ("better_direction", "string"),
-              ("source_name", "string"), ("data_date", "date"), ("caveat", "string")],
+              ("source_name", "string"), ("data_date", "date"), ("caveat", "string"),
+              ("how_scored", "string")],
+    ),
+    # Everything not in the score, one row per fact (see rpt.pbi_county_background).
+    "county_background": dict(
+        sql="SELECT county_fips, fact, value, unit FROM rpt.pbi_county_background",
+        cols=[("county_fips", "string"), ("fact", "string"), ("value", "string"), ("unit", "string")],
     ),
 }
 
@@ -170,7 +176,8 @@ FORMATS = {"factor_score": "0", "raw_value": "#,##0.00", "miles": "#,##0.0",
 
 
 VIEWS = {"County": "pbi_county", "county_factor_score": "pbi_county_factor_score",
-         "pipeline_segment": "pbi_pipeline_segment", "plant": "pbi_plant", "metric": "pbi_metric"}
+         "pipeline_segment": "pbi_pipeline_segment", "plant": "pbi_plant", "metric": "pbi_metric",
+         "county_background": "pbi_county_background"}
 
 
 def m_source(spec, name):
@@ -349,7 +356,10 @@ def write_model():
         t = wtable(key)
         txt = (
             f"table {q(t)}\n\tisHidden\n\n"
-            f"\tcolumn {q(label)}\n\t\tdataType: int64\n\t\tsourceColumn: [Value]\n\t\tsummarizeBy: none\n\n"
+            f"\tcolumn {q(label)}\n\t\tdataType: int64\n\t\tformatString: 0\n\t\tsourceColumn: [Value]\n\t\tsummarizeBy: none\n\n"
+            # What-if parameter marker: without it Desktop treats the column as plain
+            # data and the slider handle is not tied to the number box.
+            "\t\textendedProperty ParameterMetadata =\n\t\t\t\t{\n\t\t\t\t  \"version\": 0\n\t\t\t\t}\n\n"
             + measure(wmeasure(key), f"SELECTEDVALUE ( {q(t)}[{label}], {default} )", "0")
             + f"\tpartition {q(t)} = calculated\n\t\tmode: import\n\t\tsource = GENERATESERIES ( {lo}, 10, 1 )\n"
         )
@@ -367,6 +377,7 @@ def write_model():
         ("score_to_county", "county_factor_score.county_fips", "County.county_fips"),
         ("pipe_to_county", "pipeline_segment.county_fips", "County.county_fips"),
         ("plant_to_county", "plant.county_fips", "County.county_fips"),
+        ("background_to_county", "county_background.county_fips", "County.county_fips"),
     ]
     (SM / "definition" / "relationships.tmdl").write_text(
         "\n".join(f"relationship {n}\n\tfromColumn: {a}\n\ttoColumn: {b}\n" for n, a, b in rels))
@@ -669,21 +680,15 @@ def write_report():
         ("c", "county_factor_score", "raw_value", "Value"),
         ("c", "county_factor_score", "unit", "Unit"), ("c", "county_factor_score", "factor_score", "Score")],
         ("c", "county_factor_score", "pillar", "Ascending"), title="Factor scores"))
-    vs.append(table_visual(P3, "facts", pos(720, 90, 1196, 160, 1004), [
-        ("c", "County", "ozone_class", "Ozone class"),
-        ("c", "County", "nox_offset_ratio", "NOx offset ratio"),
-        ("c", "County", "nox_offset_cost_per_tpy", "Offset cost ($ per ton/yr emitted)"),
-        ("c", "County", "nox_credit_price_per_tpy", "Credit price ($ per ton/yr)"),
-        ("c", "County", "nox_credit_tons_traded", "Credits traded, last 2 yrs (tons)"),
-        ("c", "County", "lng_terminals", "LNG terminals"),
-        ("c", "County", "land_industrial_acres", "Industrial acres"),
-        ("c", "County", "land_parcel_coverage", "Parcel acres vs. county area")],
-        ("c", "County", "ozone_class", "Ascending"), title="Key facts"))
-    vs.append(table_visual(P3, "pipes", pos(720, 260, 1196, 380, 1002), [
+    vs.append(table_visual(P3, "background", pos(720, 90, 1196, 340, 1004), [
+        ("c", "county_background", "fact", "Fact"), ("c", "county_background", "value", "Value"),
+        ("c", "county_background", "unit", "Unit")],
+        ("c", "county_background", "fact", "Ascending"), title="Background info (not in the score)"))
+    vs.append(table_visual(P3, "pipes", pos(720, 440, 1196, 330, 1002), [
         ("c", "pipeline_segment", "operator_name", "Operator"), ("c", "pipeline_segment", "system_name", "System"),
         ("c", "pipeline_segment", "diameter_in", "Diameter (in)"), ("c", "pipeline_segment", "interstate", "Interstate"),
         ("c", "pipeline_segment", "miles", "Miles")], ("c", "pipeline_segment", "miles", "Descending"), title="Gas pipelines"))
-    vs.append(table_visual(P3, "plants", pos(720, 650, 1196, 426, 1003), [
+    vs.append(table_visual(P3, "plants", pos(720, 780, 1196, 296, 1003), [
         ("c", "plant", "plant_name", "Plant"), ("c", "plant", "technology", "Technology"),
         ("c", "plant", "nameplate_mw", "MW"), ("c", "plant", "operating_year", "Year online")],
         ("c", "plant", "nameplate_mw", "Descending"), title="Operating power plants"))
@@ -697,6 +702,7 @@ def write_report():
         ("c", "metric", "pillar", "Pillar"), ("c", "metric", "label", "Metric"), ("c", "metric", "metric_type", "Type"),
         ("c", "metric", "unit", "Unit"), ("c", "metric", "better_direction", "Better when"),
         ("c", "metric", "source_name", "Source"), ("c", "metric", "data_date", "Data as of"),
+        ("c", "metric", "how_scored", "How it's scored"),
         ("c", "metric", "caveat", "Notes")], ("c", "metric", "pillar", "Ascending")))
     write_page(P4, P4, "Catalog", vs)
 

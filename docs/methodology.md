@@ -41,7 +41,7 @@ For each factor, across the 195 ERCOT counties (`rpt.county_factor_score`):
 1. **Transform.** Skewed counts and MW use `LOG(1 + x)`, so a few very large counties don't flatten everyone else to near zero. Ratios stay linear.
 2. **Min–max to 0–100.** Worst county 0, best 100, on that factor alone.
 3. **Direction.** "Lower is better" factors are flipped, so 100 is always favourable.
-4. **Missing stays missing.** A county with no data on a factor gets a blank, not a 0 or a 100 (for example, counties with no gas queue are blank rather than "perfect").
+4. **Missing stays missing.** A county with no data on a factor gets a blank, not a 0 or a 100 (for example, counties with no gas queue are blank rather than "perfect", and counties with no power plants or no gas plants are blank on the two capacity-factor factors rather than scored 0). There is nothing to measure, so the factor is simply skipped and the pillar averages the rest.
 
 In Power BI:
 

@@ -1,0 +1,36 @@
+table county_background
+
+	column county_fips
+		dataType: string
+		isHidden
+		summarizeBy: none
+		sourceColumn: county_fips
+
+	column fact
+		dataType: string
+		summarizeBy: none
+		sourceColumn: fact
+
+	column value
+		dataType: string
+		summarizeBy: none
+		sourceColumn: value
+
+	column unit
+		dataType: string
+		summarizeBy: none
+		sourceColumn: unit
+
+
+
+	partition county_background = m
+		mode: import
+		source =
+				let
+					Source = Sql.Database(ServerName, DatabaseName),
+					View = Source{[Schema = "rpt", Item = "pbi_county_background"]}[Data],
+					Kept = Table.SelectColumns(View, {"county_fips", "fact", "value", "unit"}),
+					Typed = Table.TransformColumnTypes(Kept, {{"county_fips", type text},{"fact", type text},{"value", type text},{"unit", type text}})
+				in
+					Typed
+

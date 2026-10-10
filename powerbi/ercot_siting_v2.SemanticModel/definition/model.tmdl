@@ -8,6 +8,7 @@ ref table county_factor_score
 ref table pipeline_segment
 ref table plant
 ref table metric
+ref table county_background
 ref table 'W gas'
 ref table 'W grid'
 ref table 'W site'

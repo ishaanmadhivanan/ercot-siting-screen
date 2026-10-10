@@ -54,6 +54,11 @@ table metric
 		summarizeBy: none
 		sourceColumn: caveat
 
+	column how_scored
+		dataType: string
+		summarizeBy: none
+		sourceColumn: how_scored
+
 
 
 	partition metric = m
@@ -62,8 +67,8 @@ table metric
 				let
 					Source = Sql.Database(ServerName, DatabaseName),
 					View = Source{[Schema = "rpt", Item = "pbi_metric"]}[Data],
-					Kept = Table.SelectColumns(View, {"metric_key", "label", "category", "pillar", "metric_type", "unit", "better_direction", "source_name", "data_date", "caveat"}),
-					Typed = Table.TransformColumnTypes(Kept, {{"metric_key", type text},{"label", type text},{"category", type text},{"pillar", type text},{"metric_type", type text},{"unit", type text},{"better_direction", type text},{"source_name", type text},{"data_date", type date},{"caveat", type text}})
+					Kept = Table.SelectColumns(View, {"metric_key", "label", "category", "pillar", "metric_type", "unit", "better_direction", "source_name", "data_date", "caveat", "how_scored"}),
+					Typed = Table.TransformColumnTypes(Kept, {{"metric_key", type text},{"label", type text},{"category", type text},{"pillar", type text},{"metric_type", type text},{"unit", type text},{"better_direction", type text},{"source_name", type text},{"data_date", type date},{"caveat", type text},{"how_scored", type text}})
 				in
 					Typed
 

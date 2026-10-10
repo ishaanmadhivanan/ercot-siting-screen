@@ -75,7 +75,7 @@ VALUES
 
 ('capacity_factor', 'Realised capacity factor', 'grid', 'score', 'ratio 0-1', 'higher',
  'EIA Form 923 (2024) with EIA-860 capacity', 'https://www.eia.gov/electricity/data/eia923/', '2024-12-31',
- 'All fuels combined; capped at 1.0 because values above that are reporting artefacts.', 2),
+ 'All fuels combined; capped at 1.0 because values above that are reporting artefacts. Counties with no power plants are left blank (nothing to measure), not scored 0.', 2),
 
 ('generation_trend', 'Generation trend 2020-2024', 'grid', 'score', 'smoothed log ratio', 'higher',
  'EIA Form 923 (2020-2024)', 'https://www.eia.gov/electricity/data/eia923/', '2024-12-31',
@@ -100,7 +100,7 @@ VALUES
 
 ('gas_capacity_factor', 'Gas fleet capacity factor', 'grid', 'score', 'ratio 0-1', 'higher',
  'EIA Form 923 (2024, fuel code NG) with EIA-860 gas capacity', 'https://www.eia.gov/electricity/data/eia923/', '2024-12-31',
- 'How hard existing gas plants run. Counties with no gas fleet score 0 (no evidence either way). Capped at 1.0.', 4),
+ 'How hard existing gas plants run. Counties with no gas plants are left blank (nothing to measure) instead of scored 0, so they are not punished; competition for a new plant is covered by the gas queue factor. Capped at 1.0.', 4),
 
 -- ---------- Phase 2: air permitting (ozone nonattainment and NOx offsets) ----------
 -- The score: one number per county that can be weighted like any other factor.
@@ -228,7 +228,9 @@ WHERE metric_key IN ('aging_thermal_mw', 'land_large_tract_share', 'land_owner_d
 UPDATE dim.metric SET pillar = 'Air permit'   WHERE metric_key = 'ozone_severity';
 UPDATE dim.metric SET pillar = 'Community'    WHERE metric_key = 'pop_density';
 
-UPDATE dim.metric SET zero_is_missing = 1 WHERE metric_key = 'gas_queue_mw';
+-- A 0 here means "nothing to measure" (no queue, no plants), not a bad result.
+UPDATE dim.metric SET zero_is_missing = 1
+WHERE metric_key IN ('gas_queue_mw', 'gas_capacity_factor', 'capacity_factor');
 GO
 
 -- Check 1: every factor the model scores has a catalog row. Should return zero rows.

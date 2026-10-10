@@ -22,7 +22,7 @@ Each county gets a 0–100 score on 17 factors, grouped into five pillars:
 
 A pillar's score is the average of its factors. The overall score is the average of the pillars, weighted by the sliders. Untick a factor and it drops out; set a slider to 0 and the whole pillar drops out.
 
-The County detail page shows every number behind a county's score, plus its pipelines, power plants, NOx offset costs and LNG terminals.
+The County detail page (pick a county in the box at the top left) shows every number behind a county's score, a Background info table with everything that isn't scored (ozone class, NOx offset costs, LNG terminals, parcel data checks), and the county's pipelines and power plants. The Catalog page lists every metric with its source, date and a plain note on how it's scored.
 
 ## Data
 

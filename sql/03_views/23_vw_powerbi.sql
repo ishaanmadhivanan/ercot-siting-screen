@@ -28,8 +28,37 @@ GO
 CREATE OR ALTER VIEW rpt.pbi_metric AS
 SELECT metric_key, label, category,
        COALESCE(pillar, CASE WHEN metric_type = 'score' THEN 'Not in score' ELSE 'Background info' END) AS pillar,
-       metric_type, unit, better_direction, source_name, data_date, caveat
+       metric_type, unit, better_direction, source_name, data_date, caveat,
+       -- Plain-English version of how rpt.county_factor_score turns the raw value into 0-100.
+       CASE WHEN metric_type <> 'score' THEN 'Not scored. Shown under Background info on County detail.'
+            WHEN pillar IS NULL THEN 'Not scored on purpose (see Notes). Shown under Background info on County detail.'
+            ELSE CONCAT('0-100 against the other ERCOT counties: the ',
+                        CASE WHEN better_direction = 'lower' THEN 'lowest' ELSE 'highest' END,
+                        ' value gets 100 and the ',
+                        CASE WHEN better_direction = 'lower' THEN 'highest' ELSE 'lowest' END,
+                        ' gets 0.',
+                        CASE WHEN score_transform = 'log' THEN ' Log scale, so a few very large counties do not squash the rest.' ELSE '' END,
+                        CASE WHEN zero_is_missing = 1 THEN ' A 0 is left blank (nothing to measure).' ELSE '' END)
+       END AS how_scored
 FROM dim.metric;
+GO
+
+-- Everything about a county that is not in the score, one row per fact, for
+-- the Background info table on County detail.
+CREATE OR ALTER VIEW rpt.pbi_county_background AS
+SELECT a.county_fips, m.label AS fact,
+       COALESCE(a.value_text, FORMAT(a.value_num, '#,0.##')) AS value,
+       CASE WHEN m.unit IN ('text', 'category') THEN '' ELSE m.unit END AS unit
+FROM fact.county_attribute a
+JOIN dim.metric m ON m.metric_key = a.attribute_key
+JOIN dim.county c ON c.county_fips = a.county_fips
+WHERE c.in_ercot = 1 AND m.metric_type IN ('flag', 'context')
+UNION ALL
+SELECT f.county_fips, m.label, FORMAT(f.raw_value, '#,0.##'), m.unit
+FROM rpt.county_factor f
+JOIN dim.metric m ON m.metric_key = f.factor_key
+JOIN dim.county c ON c.county_fips = f.county_fips
+WHERE c.in_ercot = 1 AND m.metric_type = 'score' AND m.pillar IS NULL;
 GO
 
 -- Check: row counts (expect County 195, factor scores ~3,500, metric 40+).
@@ -37,5 +66,10 @@ SELECT 'pbi_county' AS view_name, COUNT(*) AS row_count FROM rpt.pbi_county UNIO
 SELECT 'pbi_county_factor_score', COUNT(*) FROM rpt.pbi_county_factor_score UNION ALL
 SELECT 'pbi_pipeline_segment', COUNT(*) FROM rpt.pbi_pipeline_segment UNION ALL
 SELECT 'pbi_plant', COUNT(*) FROM rpt.pbi_plant UNION ALL
-SELECT 'pbi_metric', COUNT(*) FROM rpt.pbi_metric;
+SELECT 'pbi_metric', COUNT(*) FROM rpt.pbi_metric UNION ALL
+SELECT 'pbi_county_background', COUNT(*) FROM rpt.pbi_county_background;
+
+-- Check: gas fleet factor is now blank (not 0) where a county has no gas plants.
+SELECT COUNT(*) AS counties, SUM(CASE WHEN factor_score IS NULL THEN 1 ELSE 0 END) AS blank
+FROM rpt.county_factor_score WHERE factor_key = 'gas_capacity_factor'
 GO

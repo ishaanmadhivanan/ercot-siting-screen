@@ -3,8 +3,14 @@ table 'W site'
 
 	column 'Site control'
 		dataType: int64
+		formatString: 0
 		sourceColumn: [Value]
 		summarizeBy: none
+
+		extendedProperty ParameterMetadata =
+				{
+				  "version": 0
+				}
 
 	measure 'W site Value' = ```
 			SELECTEDVALUE ( 'W site'[Site control], 5 )

@@ -9,3 +9,7 @@ relationship pipe_to_county
 relationship plant_to_county
 	fromColumn: plant.county_fips
 	toColumn: County.county_fips
+
+relationship background_to_county
+	fromColumn: county_background.county_fips
+	toColumn: County.county_fips
