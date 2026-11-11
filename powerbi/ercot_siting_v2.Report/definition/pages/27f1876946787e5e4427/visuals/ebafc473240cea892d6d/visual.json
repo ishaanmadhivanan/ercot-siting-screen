@@ -85,7 +85,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'Pillar scores: ERCOT average vs. selected county'"
+                  "Value": "'ERCOT average vs. selected county'"
                 }
               }
             }

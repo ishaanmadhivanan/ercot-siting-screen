@@ -559,7 +559,7 @@ def pillar_bar(page, position):
         "drillFilterOtherVisuals": False}
     # Clicking a county cross-highlights this chart: the full bar stays as the ERCOT
     # average and the darker part is the selected county.
-    titled(vis, "Pillar scores: ERCOT average vs. selected county")
+    titled(vis, "ERCOT average vs. selected county")
     return name, visual(name, position, vis)
 
 
@@ -647,13 +647,10 @@ def write_report():
         ("m", "County", "My Score", "Descending"), title="Top 10 counties")
     tv["filterConfig"] = {"filters": [topn_filter(tname, 10)]}
     vs.append((tname, tv)); z += 1
-    vs.append(textbox(P1, "howto", pos(410, 994, 900, 82, z),
-                      "Set how much each pillar matters (0 removes it) and untick any components you don't want. "
+    vs.append(textbox(P1, "howto", pos(410, 994, 1506, 82, z),
+                      "Set how much each umbrella matters (0 removes it) and untick any components you don't want. "
                       "Click a county on the map or in the table to zoom in on it. "
                       "For the full breakdown of any county, go to County detail and pick it from the box.", "11pt")); z += 1
-    vs.append(textbox(P1, "asof", pos(1320, 994, 596, 82, z),
-                      "Data: EIA 2024 | ERCOT queue Aug 2026 | EPA Green Book Aug 2026 | "
-                      "RRC pipelines Sep 2026 | TxGIO parcels 2025", "10pt")); z += 1
     write_page(P1, P1, "Score map", vs)
 
     # ---- page 2: one factor at a time
