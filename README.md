@@ -4,6 +4,7 @@
 2. Download `ercot_siting_screen.pbix` from the [latest release](https://github.com/ishaanmadhivanan/ercot-siting-screen/releases/latest), under **Assets**.
 3. Double-click the file to open it.
 4. If Power BI asks to refresh or connect to a database, click **Cancel**. The data is already saved in the file.
+5. - **PDF:** [all four pages](docs/ercot_siting_report.pdf) with default weights. (for MacOs)
 
 # ERCOT Gas Plant Siting Screen
 
@@ -11,10 +12,8 @@ Ranks all 195 counties on the ERCOT grid for building a new gas-fired power plan
 
 ![Score map](docs/score_map.png)
 
-## View it
 
-- **Interactive:** download `ercot_siting_screen.pbix` from the [latest release](https://github.com/ishaanmadhivanan/ercot-siting-screen/releases/latest) and open it in [Power BI Desktop](https://www.microsoft.com/en-us/power-platform/products/power-bi/desktop) (free, Windows only). The data is inside the file; Refresh won't work without the database, but everything else does.
-- **PDF:** [all four pages](docs/ercot_siting_report.pdf) with default weights.
+
 
 ## How to use it
 
