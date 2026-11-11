@@ -28,7 +28,7 @@
               },
               "queryRef": "metric.pillar",
               "nativeQueryRef": "pillar",
-              "displayName": "Pillar",
+              "displayName": "Category",
               "active": true
             }
           ]

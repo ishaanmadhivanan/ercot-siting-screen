@@ -3,7 +3,7 @@
   "artifacts": [
     {
       "report": {
-        "path": "ercot_siting_v2.Report"
+        "path": "ercot_siting_screen.Report"
       }
     }
   ],

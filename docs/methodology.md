@@ -12,7 +12,7 @@ Why majority capacity and not "any ERCOT plant": the first version used presence
 
 Every factor is one block in the tall view `rpt.county_factor` (one row per county per factor). Adding a factor means one SQL block plus one row in `dim.metric`; nothing downstream changes.
 
-| Pillar | Factor | Unit | Better | Transform | Source |
+| Category | Factor | Unit | Better | Transform | Source |
 | --- | --- | --- | --- | --- | --- |
 | Gas supply | Gas transmission pipe | miles | higher | log | RRC TPMS, in-service NGT lines |
 | Gas supply | Large gas pipe (20 in+) | miles | higher | log | RRC TPMS |
@@ -20,7 +20,7 @@ Every factor is one block in the tall view `rpt.county_factor` (one row per coun
 | Gas supply | Gas pipeline operators | operators with 1+ mile | higher | log | RRC TPMS |
 | Gas supply | Gas gathering pipe | miles | higher | log | RRC TPMS (NGG/NFG lines) |
 | Grid connection | Existing generation capacity | MW | higher | log | EIA-860 |
-| Grid connection | Realised capacity factor | ratio | higher | linear | EIA-923 / EIA-860 |
+| Grid connection | Realized capacity factor | ratio | higher | linear | EIA-923 / EIA-860 |
 | Grid connection | Gas fleet capacity factor | ratio | higher | linear | EIA-923 (NG) / EIA-860 |
 | Grid connection | Generation trend 2020–2024 | smoothed log ratio | higher | linear | EIA-923 |
 | Grid connection | Active gas queue | MW | lower | log | ERCOT GIS Report |
@@ -41,13 +41,13 @@ For each factor, across the 195 ERCOT counties (`rpt.county_factor_score`):
 1. **Transform.** Skewed counts and MW use `LOG(1 + x)`, so a few very large counties don't flatten everyone else to near zero. Ratios stay linear.
 2. **Min–max to 0–100.** Worst county 0, best 100, on that factor alone.
 3. **Direction.** "Lower is better" factors are flipped, so 100 is always favourable.
-4. **Missing stays missing.** A county with no data on a factor gets a blank, not a 0 or a 100 (for example, counties with no gas queue are blank rather than "perfect", and counties with no power plants or no gas plants are blank on the two capacity-factor factors rather than scored 0). There is nothing to measure, so the factor is simply skipped and the pillar averages the rest.
+4. **Missing stays missing.** A county with no data on a factor gets a blank, not a 0 or a 100 (for example, counties with no gas queue are blank rather than "perfect", and counties with no power plants or no gas plants are blank on the two capacity-factor factors rather than scored 0). There is nothing to measure, so the factor is simply skipped and the category averages the rest.
 
 In Power BI:
 
-- **Pillar score** = average of the county's switched-on components that have a value.
-- **Overall score** = pillar scores weighted by the user's 0–10 pillar sliders, over the pillars the county has data for.
-- **Data coverage** = share of the user's weight that had data for that county. Below 100% means a whole pillar was missing and the score rests on the rest.
+- **Category score** = average of the county's switched-on components that have a value.
+- **Overall score** = category scores weighted by the user's 0–10 category sliders, over the categories the county has data for.
+- **Data coverage** = share of the user's weight that had data for that county. Below 100% means a whole category was missing and the score rests on the rest.
 
 Scores are relative to other ERCOT counties, not absolute measures of suitability.
 

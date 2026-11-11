@@ -62,142 +62,135 @@ INSERT INTO dim.metric
 VALUES
 ('installed_mw', 'Existing generation capacity', 'grid', 'score', 'MW', 'higher',
  'EIA Form 860 (2024)', 'https://www.eia.gov/electricity/data/eia860/', '2024-12-31',
- 'Proxy for transmission presence. Says nothing about whether nearby lines are congested.', 1),
+ 'Operating power plant capacity in the county. A rough sign that transmission lines are nearby; it says nothing about whether those lines have room for more.', 1),
 
 ('retiring_mw', 'Capacity retiring by 2030', 'grid', 'score', 'MW', 'higher',
  'EIA Form 860 (2024)', 'https://www.eia.gov/electricity/data/eia860/', '2024-12-31',
- 'Through 2030, EIA-860 lists planned ERCOT retirements almost only in Bexar, so this barely discriminates between counties. Superseded by aging_thermal_mw. Removed from rpt.county_factor in Phase 5 (pillar layout).', 1),
+ 'Not in the score. EIA lists planned ERCOT retirements through 2030 almost only in Bexar County, so this doesn''t separate counties. Plant age (Gas and coal 40+ years old) is used instead.', 1),
 
 ('pop_density', 'Population density', 'land', 'score', 'people per sq mi', 'lower',
- 'US Census population estimates (2025) and Gazetteer land area (2024)',
- 'https://www.census.gov/data/tables/time-series/demo/popest/2020s-counties-total.html', '2025-07-01',
- 'Weak land proxy. Ignores parcel structure and land use; to be superseded by parcel metrics.', 2),
+ 'US Census population estimates (2025) and Gazetteer land area (2024)', 'https://www.census.gov/data/tables/time-series/demo/popest/2020s-counties-total.html', '2025-07-01',
+ 'Fewer people means fewer neighbors near a plant and usually less local opposition. A rough measure only.', 2),
 
-('capacity_factor', 'Realised capacity factor', 'grid', 'score', 'ratio 0-1', 'higher',
- 'EIA Form 923 (2024) with EIA-860 capacity', 'https://www.eia.gov/electricity/data/eia923/', '2024-12-31',
- 'All fuels combined; capped at 1.0 because values above that are reporting artefacts. Counties with no power plants are left blank (nothing to measure), not scored 0.', 2),
+('capacity_factor', 'Realized capacity factor', 'grid', 'score', 'ratio 0-1', 'higher',
+ 'EIA Forms 923 and 860 (2024)', 'https://www.eia.gov/electricity/data/eia923/', '2024-12-31',
+ 'How hard all of the county''s power plants ran in 2024: actual output divided by the most they could produce. Capped at 1.0 because higher values are reporting errors. Blank for counties with no power plants.', 2),
 
-('generation_trend', 'Generation trend 2020-2024', 'grid', 'score', 'smoothed log ratio', 'higher',
+('generation_trend', 'Generation trend 2020-2024', 'grid', 'score', 'log ratio', 'higher',
  'EIA Form 923 (2020-2024)', 'https://www.eia.gov/electricity/data/eia923/', '2024-12-31',
- 'Smoothed with a 10,000 MWh floor so zero-generation counties do not tie at a ceiling.', 2),
+ 'Change in the county''s power output from 2020 to 2024. A 10,000 MWh floor is added so counties with no generation don''t all tie for the top.', 2),
 
 ('queue_congestion', 'Active interconnection queue', 'grid', 'score', 'MW', 'lower',
- 'ERCOT GIS Report (August 2026)', 'https://www.ercot.com/mp/data-products/data-product-details?id=PG7-200-ER', '2026-08-31',
- 'Fewer queued MW is better for a gas plant (less competition for the same grid). The datacenter preset in dim.score_weight still treats it the other way. Excludes confidential projects not yet in full study.', 3),
+ 'ERCOT GIS Report', 'https://www.ercot.com/mp/data-products/data-product-details?id=PG7-200-ER', '2026-08-31',
+ 'MW of all projects waiting to connect to the grid in the county. Fewer is better: less competition for the same connection. Leaves out confidential projects ERCOT hasn''t published yet.', 3),
 
 ('queue_attrition', 'Queue attrition rate', 'grid', 'score', 'ratio 0-1', 'lower',
- 'ERCOT GIS Report (August 2026)', 'https://www.ercot.com/mp/data-products/data-product-details?id=PG7-200-ER', '2026-08-31',
- 'Shrunk toward the statewide rate for counties with little history. Cumulative withdrawals vs current queue, not a true failure rate. Left out of the county score in Phase 5: the values differ by about 0.01 across counties, so min-max scaling turned noise into a 0-100 spread.', 3),
+ 'ERCOT GIS Report', 'https://www.ercot.com/mp/data-products/data-product-details?id=PG7-200-ER', '2026-08-31',
+ 'Not in the score. Share of past projects in the county that dropped out of the queue, pulled toward the statewide rate where there''s little history. Counties differ by only about 0.01, so scoring it would turn noise into big differences.', 3),
 
--- ---------- Phase 1 of the gas pivot: gas-specific versions of existing factors ----------
 ('aging_thermal_mw', 'Gas and coal 40+ years old', 'grid', 'score', 'MW', 'higher',
  'EIA Form 860 (2024)', 'https://www.eia.gov/electricity/data/eia860/', '2024-12-31',
- 'Operating gas and coal units built 1985 or earlier. Age proxies for retirement or repowering candidates; it is not an announced retirement.', 4),
+ 'Operating gas and coal units built in 1985 or earlier. Old plants are likely to retire or be rebuilt, and their sites already have grid and gas connections. Age is a guess, not an announced retirement.', 4),
 
 ('gas_queue_mw', 'Active gas queue', 'grid', 'score', 'MW', 'lower',
- 'ERCOT GIS Report (August 2026)', 'https://www.ercot.com/mp/data-products/data-product-details?id=PG7-200-ER', '2026-08-31',
- 'Gas projects only - the direct competition for a new gas plant. Counties with no active gas queue are left blank (not scored 100): most counties have none, so a 100 told you nothing. Excludes confidential projects not yet in full study.', 4),
+ 'ERCOT GIS Report', 'https://www.ercot.com/mp/data-products/data-product-details?id=PG7-200-ER', '2026-08-31',
+ 'MW of gas projects waiting to connect in the county: the direct competition for a new gas plant. Fewer is better. Blank where there are none, since most counties have none. Leaves out confidential projects.', 4),
 
 ('gas_capacity_factor', 'Gas fleet capacity factor', 'grid', 'score', 'ratio 0-1', 'higher',
- 'EIA Form 923 (2024, fuel code NG) with EIA-860 gas capacity', 'https://www.eia.gov/electricity/data/eia923/', '2024-12-31',
- 'How hard existing gas plants run. Counties with no gas plants are left blank (nothing to measure) instead of scored 0, so they are not punished; competition for a new plant is covered by the gas queue factor. Capped at 1.0.', 4),
+ 'EIA Forms 923 and 860 (2024)', 'https://www.eia.gov/electricity/data/eia923/', '2024-12-31',
+ 'How hard the county''s existing gas plants ran in 2024. Busy plants suggest gas power is needed there. Blank for counties with no gas plants. Capped at 1.0.', 4),
 
--- ---------- Phase 2: air permitting (ozone nonattainment and NOx offsets) ----------
--- The score: one number per county that can be weighted like any other factor.
 ('ozone_severity', 'Ozone nonattainment severity', 'air', 'score', 'rank 0-5', 'lower',
- 'EPA Green Book (current as of August 31, 2026)', 'https://www3.epa.gov/airquality/greenbook/anayo_tx.html', '2026-08-31',
- '0 Attainment, 1 Marginal, 2 Moderate, 3 Serious, 4 Severe, 5 Extreme. Strictest current ozone standard (2008 or 2015). Whole-county designations only in Texas today.', 5),
+ 'EPA Green Book', 'https://www3.epa.gov/airquality/greenbook/anayo_tx.html', '2026-08-31',
+ 'EPA ozone rating under the stricter of the 2008 and 2015 standards: 0 Attainment, 1 Marginal, 2 Moderate, 3 Serious, 4 Severe, 5 Extreme. A worse rating means a harder, more expensive air permit.', 5),
 
--- The attributes: filters and context, stored in fact.county_attribute, never weighted.
-('ozone_classification', 'Ozone classification', 'air', 'flag', 'category', 'lower',
- 'EPA Green Book (current as of August 31, 2026)', 'https://www3.epa.gov/airquality/greenbook/anayo_tx.html', '2026-08-31',
- 'value_text holds the class name, value_num the severity rank. Houston and Dallas-Fort Worth are Severe under 2008 and Serious under 2015; permitting follows the stricter one.', 5),
+('ozone_classification', 'Ozone classification', 'air', 'flag', '', 'lower',
+ 'EPA Green Book', 'https://www3.epa.gov/airquality/greenbook/anayo_tx.html', '2026-08-31',
+ 'The county''s EPA ozone rating. Houston and Dallas-Fort Worth are Severe under the 2008 standard and Serious under 2015; permits follow the stricter one.', 5),
 
-('ozone_standards_detail', 'Ozone standards breached', 'air', 'context', 'text', 'none',
- 'EPA Green Book (current as of August 31, 2026)', 'https://www3.epa.gov/airquality/greenbook/anayo_tx.html', '2026-08-31',
- 'Each current ozone standard the county violates and its class, e.g. "2008: Severe 15; 2015: Serious". Nonattainment counties only.', 5),
+('ozone_standards_detail', 'Ozone standards breached', 'air', 'context', '', 'none',
+ 'EPA Green Book', 'https://www3.epa.gov/airquality/greenbook/anayo_tx.html', '2026-08-31',
+ 'Each ozone standard the county fails and its rating, for example "2008: Severe 15; 2015: Serious". Only for counties that fail one.', 5),
 
 ('nox_major_source_tpy', 'NOx major source threshold', 'air', 'flag', 'tons per year', 'higher',
- 'Clean Air Act Title I, Part D (versioned in data/seed/ozone_classification_rules.csv)', 'https://www.epa.gov/nsr/nonattainment-nsr-basic-information', NULL,
- 'A plant emitting at or above this much NOx needs nonattainment review and must buy offsets. Nonattainment counties only. Attainment counties go through PSD review instead: pollution controls, but no offsets to buy.', 5),
+ 'Clean Air Act nonattainment permit rules', 'https://www.epa.gov/nsr/nonattainment-nsr-basic-information', NULL,
+ 'A plant emitting this much NOx or more needs a nonattainment permit and must buy offset credits. Only for counties that fail an ozone standard. Elsewhere, plants still need pollution controls but don''t buy offsets.', 5),
 
 ('nox_offset_ratio', 'NOx offset ratio', 'air', 'flag', 'tons of credit per ton emitted', 'lower',
- 'Clean Air Act Title I, Part D (versioned in data/seed/ozone_classification_rules.csv)', 'https://www.epa.gov/nsr/nonattainment-nsr-basic-information', NULL,
- 'Tons of emission credit a major source must buy per ton of NOx it will emit. 0 in attainment counties (no offsets required).', 5),
+ 'Clean Air Act nonattainment permit rules', 'https://www.epa.gov/nsr/nonattainment-nsr-basic-information', NULL,
+ 'Tons of credits a plant must buy for each ton of NOx it will emit. 0 where no offsets are needed.', 5),
 
 ('nox_credit_trades', 'NOx credit trades (area)', 'air', 'context', 'trades', 'higher',
  'TCEQ Emission Credit Trade Report', 'https://www.tceq.texas.gov/assets/public/permitting/air/reports/banking/ectradereport.html', '2026-09-11',
- 'Priced NOx credit trades in the county''s nonattainment area, Oct 2024 to Sep 2026. Credits must come from the same area. A thin market means credits may not be available at any price.', 5),
+ 'Number of priced NOx credit trades in the county''s ozone area, Oct 2024 to Sep 2026. Credits must come from the same area, so few trades can mean credits are hard to find at any price.', 5),
 
 ('nox_credit_tons_traded', 'NOx credit tons traded (area)', 'air', 'context', 'tons per year', 'higher',
  'TCEQ Emission Credit Trade Report', 'https://www.tceq.texas.gov/assets/public/permitting/air/reports/banking/ectradereport.html', '2026-09-11',
- 'Total credit volume in priced NOx trades, Oct 2024 to Sep 2026. Houston traded 87 tpy in two years; a single 100 tpy plant at 1.3:1 would need 130.', 5),
+ 'Tons per year of NOx credits sold in the area, Oct 2024 to Sep 2026. Houston sold 87 in two years; one 100-ton-per-year plant at 1.3 to 1 would need 130.', 5),
 
-('nox_credit_price_per_tpy', 'NOx credit price (area median)', 'air', 'context', 'USD per tpy', 'lower',
+('nox_credit_price_per_tpy', 'NOx credit price (area median)', 'air', 'context', 'USD per ton per year', 'lower',
  'TCEQ Emission Credit Trade Report', 'https://www.tceq.texas.gov/assets/public/permitting/air/reports/banking/ectradereport.html', '2026-09-11',
- 'Median price of priced NOx trades in the area, one-time purchase per ton/year of credit. Missing (not zero) where the area had no priced trades: San Antonio and El Paso.', 5),
+ 'Median price paid for NOx credits in the area, a one-time purchase per ton per year. Blank where the area had no priced trades (San Antonio and El Paso).', 5),
 
-('nox_offset_cost_per_tpy', 'NOx offset cost per tpy emitted', 'air', 'flag', 'USD per tpy', 'lower',
- 'Derived: offset ratio x area median credit price', NULL, '2026-09-11',
- 'Up-front credit cost per ton/year of NOx the plant will emit; multiply by your own plant''s emissions. 0 in attainment counties; missing where the area has no priced trades.', 5),
+('nox_offset_cost_per_tpy', 'NOx offset cost per ton emitted', 'air', 'flag', 'USD per ton per year', 'lower',
+ 'Calculated: offset ratio x area credit price', NULL, '2026-09-11',
+ 'Up-front credit cost for each ton per year of NOx the plant will emit; multiply by the plant''s own emissions. 0 where no offsets are needed; blank where the area had no priced trades.', 5),
 
--- ---------- Phase 3: gas access (RRC pipeline map, LNG terminals) ----------
 ('gas_pipe_miles', 'Gas transmission pipe', 'gas', 'score', 'miles', 'higher',
- 'Railroad Commission of Texas pipeline map (TPMS), in-service NGT lines', 'https://gis.rrc.texas.gov/server/rest/services/rrc_public/tpms/MapServer/0', '2026-09-30',
- 'Miles of existing pipe, not spare capacity: capacity, pressure and flow are not public for intrastate lines. Says a plant could connect, not that gas is available.', 6),
+ 'Railroad Commission of Texas pipeline map', 'https://gis.rrc.texas.gov/server/rest/services/rrc_public/tpms/MapServer/0', '2026-09-30',
+ 'Miles of gas transmission pipe in the county. Shows a plant could connect, not that spare gas is available: capacity and pressure aren''t public for pipes inside Texas.', 6),
 
 ('gas_pipe_large_miles', 'Large gas pipe (20 in and up)', 'gas', 'score', 'miles', 'higher',
- 'Railroad Commission of Texas pipeline map (TPMS), in-service NGT lines', 'https://gis.rrc.texas.gov/server/rest/services/rrc_public/tpms/MapServer/0', '2026-09-30',
- 'Diameter stands in for capacity, which is not published. Large trunk lines are the ones typically able to supply a utility-scale plant; small lines mostly serve towns and industry.', 6),
+ 'Railroad Commission of Texas pipeline map', 'https://gis.rrc.texas.gov/server/rest/services/rrc_public/tpms/MapServer/0', '2026-09-30',
+ 'Miles of transmission pipe 20 inches or wider. Diameter stands in for capacity, which isn''t published. Large lines are the ones that can usually supply a power plant; small ones mostly serve towns and industry.', 6),
 
 ('gas_pipe_operators', 'Gas pipeline operators', 'gas', 'score', 'operators', 'higher',
- 'Railroad Commission of Texas pipeline map (TPMS), in-service NGT lines', 'https://gis.rrc.texas.gov/server/rest/services/rrc_public/tpms/MapServer/0', '2026-09-30',
- 'Distinct operators (RRC P-5 number) with at least 1 mile of transmission pipe in the county. More operators means more supply options and negotiating leverage.', 6),
+ 'Railroad Commission of Texas pipeline map', 'https://gis.rrc.texas.gov/server/rest/services/rrc_public/tpms/MapServer/0', '2026-09-30',
+ 'Number of companies with at least 1 mile of transmission pipe in the county. More operators means more supply options and a better negotiating position.', 6),
 
 ('gas_pipe_interstate_miles', 'Interstate gas pipe', 'gas', 'score', 'miles', 'higher',
- 'Railroad Commission of Texas pipeline map (TPMS), in-service NGT lines flagged interstate', 'https://gis.rrc.texas.gov/server/rest/services/rrc_public/tpms/MapServer/0', '2026-09-30',
- 'Interstate lines are FERC regulated with published, open-access tariffs. Intrastate lines (about three quarters of Texas mileage) negotiate service privately.', 6),
+ 'Railroad Commission of Texas pipeline map', 'https://gis.rrc.texas.gov/server/rest/services/rrc_public/tpms/MapServer/0', '2026-09-30',
+ 'Miles of pipe that crosses state lines. These are federally regulated, with published rates and open access. Pipes inside Texas (about three quarters of the mileage) set terms privately.', 6),
 
 ('gas_gathering_miles', 'Gas gathering pipe', 'gas', 'score', 'miles', 'higher',
- 'Railroad Commission of Texas pipeline map (TPMS), in-service NGG and NFG lines', 'https://gis.rrc.texas.gov/server/rest/services/rrc_public/tpms/MapServer/0', '2026-09-30',
- 'Proxy for nearby gas production (Permian, Eagle Ford, Haynesville), where gas tends to be cheapest. Gathering lines carry raw well gas and cannot feed a plant directly. Stored in fact.county_attribute.', 6),
+ 'Railroad Commission of Texas pipeline map', 'https://gis.rrc.texas.gov/server/rest/services/rrc_public/tpms/MapServer/0', '2026-09-30',
+ 'Miles of pipe that collects gas from wells. A sign of nearby production (Permian, Eagle Ford, Haynesville), where gas is usually cheapest. Gathering lines carry raw gas and can''t feed a plant directly.', 6),
 
 ('lng_terminal_count', 'LNG export terminals', 'gas', 'context', 'terminals', 'none',
- 'Hand-built list (data/seed/lng_terminals.csv); Golden Pass status from EIA, April 2026', 'https://www.eia.gov/todayinenergy/detail.php?id=67564', '2026-09-30',
- 'Operating or under construction. Competing demand for pipeline gas; also a sign of large-diameter supply lines nearby. Status needs periodic review.', 6),
+ 'Compiled by hand; Golden Pass status from EIA, April 2026', 'https://www.eia.gov/todayinenergy/detail.php?id=67564', '2026-09-30',
+ 'LNG export terminals operating or under construction. They compete for pipeline gas but also mean large supply lines are nearby. Status needs checking now and then.', 6),
 
-('lng_terminals', 'LNG export terminals (names)', 'gas', 'context', 'text', 'none',
- 'Hand-built list (data/seed/lng_terminals.csv)', NULL, '2026-09-30',
- 'Terminal names with status, e.g. "Golden Pass LNG (Operating); Port Arthur LNG (Under construction)".', 6),
+('lng_terminals', 'LNG export terminals (names)', 'gas', 'context', '', 'none',
+ 'Compiled by hand', NULL, '2026-09-30',
+ 'Terminal names and status, for example "Golden Pass LNG (Operating)".', 6),
 
--- ---------- Phase 4: land (TxGIO StratMap Land Parcels, 2025 release) ----------
 ('land_large_tract_share', 'Land in large tracts (100+ ac)', 'land', 'score', 'share 0-1', 'higher',
  'TxGIO StratMap Land Parcels 2025 (county appraisal districts)', 'https://geographic.texas.gov/', '2025-05-01',
- 'Share of parcel acres in parcels of 100+ acres: room to site a plant on a single ownership. Acres recomputed in Texas Albers; shapes repeated for undivided owners counted once. Missing where parcel coverage is outside 80-125% of county land area.', 7),
+ 'Share of parcel acres in parcels of 100 acres or more: room for a plant on land with one owner. Blank where the parcel data covers less than 80% or more than 125% of the county.', 7),
 
 ('land_owner_density', 'Landowners per 1,000 rural acres', 'land', 'score', 'owners per 1,000 acres', 'lower',
  'TxGIO StratMap Land Parcels 2025 (county appraisal districts)', 'https://geographic.texas.gov/', '2025-05-01',
- 'Distinct owner names on parcels of 5+ acres per 1,000 acres of those parcels: how many landowners a project must deal with. Name spelling variants count separately. Missing where parcel coverage is outside 80-125%.', 7),
+ 'Number of different owners of 5+ acre parcels per 1,000 acres of those parcels: how many landowners a project may have to deal with. The same owner spelled differently counts twice. Blank where parcel data is incomplete.', 7),
 
 ('land_parcels_500ac', 'Parcels of 500+ acres', 'land', 'score', 'parcels', 'higher',
  'TxGIO StratMap Land Parcels 2025 (county appraisal districts)', 'https://geographic.texas.gov/', '2025-05-01',
- 'Count of single parcels of 500+ acres: the supply of tracts big enough for a plant plus buffer. Missing where parcel coverage is outside 80-125%.', 7),
+ 'Number of single parcels of 500 acres or more: tracts big enough for a plant plus a buffer. Blank where parcel data is incomplete.', 7),
 
 ('land_industrial_acres', 'Industrial and utility land', 'land', 'context', 'acres', 'higher',
- 'TxGIO StratMap Land Parcels 2025, state property codes F2 and J3', 'https://geographic.texas.gov/', '2025-05-01',
- 'Acres coded F2 (industrial real property) or J3 (electric utility): brownfield context. Only where 80%+ of parcels carry a state code (about 62 of 194 counties); codes are blank or misapplied elsewhere.', 7),
+ 'TxGIO StratMap Land Parcels 2025, state land-use codes F2 and J3', 'https://geographic.texas.gov/', '2025-05-01',
+ 'Acres coded as industrial (F2) or electric utility (J3) land. Only shown where at least 80% of parcels have a land-use code, about a third of counties.', 7),
 
 ('land_code_coverage', 'Parcels with a land-use code', 'land', 'context', 'share 0-1', 'none',
  'TxGIO StratMap Land Parcels 2025', 'https://geographic.texas.gov/', '2025-05-01',
- 'Share of parcel records with a state land-use code. Many districts leave it blank (Wharton, Fort Bend, Travis: 0%).', 7),
+ 'Share of parcels that have a state land-use code. Many counties leave it blank (Wharton, Fort Bend and Travis are at 0%).', 7),
 
 ('land_parcel_coverage', 'Parcel coverage of county', 'land', 'context', 'ratio', 'none',
- 'TxGIO StratMap Land Parcels 2025 vs Census land area', 'https://geographic.texas.gov/', '2025-05-01',
- 'De-duplicated parcel acres / Census land area. Near 1.0 is complete. Harris is 0.40 (partial file); Frio 2.8 and Chambers 1.7 have overlapping parcels. Land scores are left missing outside 0.8-1.25.', 7),
+ 'TxGIO StratMap Land Parcels 2025 and US Census', 'https://geographic.texas.gov/', '2025-05-01',
+ 'Parcel acres divided by the county''s Census land area. Close to 1.0 means the parcel data is complete. Harris is 0.40 (partial file); Frio (2.8) and Chambers (1.7) have overlapping parcels. Land scores are blank outside 0.8 to 1.25.', 7),
 
-('land_parcel_vintage', 'Parcel data month', 'land', 'context', 'YYYYMM', 'none',
- 'TxGIO StratMap Land Parcels 2025 (file name)', 'https://geographic.texas.gov/', NULL,
- 'Month the appraisal district data was collected, from the TxGIO file name.', 7);
+('land_parcel_vintage', 'Parcel data month', 'land', 'context', 'year and month', 'none',
+ 'TxGIO StratMap Land Parcels 2025', 'https://geographic.texas.gov/', NULL,
+ 'Month the county appraisal district''s data was collected.', 7);
 GO
 
 -- Transform used when each score metric is put on a 0-100 scale. Matches the

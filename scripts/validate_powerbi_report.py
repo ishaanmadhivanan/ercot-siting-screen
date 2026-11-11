@@ -1,6 +1,6 @@
 """Check the generated .Report folder against Microsoft's published schemas.
     pip install jsonschema referencing
-    python scripts/validate_powerbi_report.py powerbi/ercot_siting_v2.Report
+    python scripts/validate_powerbi_report.py powerbi/ercot_siting_screen.Report
 """
 import json, sys, os, glob, subprocess
 from jsonschema import Draft7Validator

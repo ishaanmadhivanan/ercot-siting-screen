@@ -2,7 +2,7 @@
 
     python scripts/build_powerbi_project.py
 
-Writes powerbi/ercot_siting_v2.pbip plus its .SemanticModel (tables, measures,
+Writes powerbi/ercot_siting_screen.pbip plus its .SemanticModel (tables, measures,
 weight sliders) and .Report (pages, visuals). Re-running overwrites the files in those
 folders, so make report changes either here or, once you start editing in
 Power BI Desktop, stop using this script and edit in Desktop.
@@ -23,7 +23,7 @@ from pathlib import Path
 
 REPO = Path(__file__).resolve().parent.parent
 OUT = REPO / "powerbi"
-NAME = "ercot_siting_v2"
+NAME = "ercot_siting_screen"
 SM = OUT / f"{NAME}.SemanticModel"
 RP = OUT / f"{NAME}.Report"
 THEME_SRC = None  # filled in from the old .pbix if present
@@ -49,7 +49,7 @@ FIRST_COUNTY = "Anderson"   # first ERCOT county alphabetically (data/seed/ercot
 COMPONENTS = [
     "Gas transmission pipe", "Large gas pipe (20 in and up)", "Interstate gas pipe",
     "Gas pipeline operators", "Gas gathering pipe",
-    "Existing generation capacity", "Realised capacity factor", "Gas fleet capacity factor",
+    "Existing generation capacity", "Realized capacity factor", "Gas fleet capacity factor",
     "Generation trend 2020-2024", "Active gas queue", "Active interconnection queue",
     "Gas and coal 40+ years old", "Land in large tracts (100+ ac)",
     "Landowners per 1,000 rural acres", "Parcels of 500+ acres",
@@ -248,24 +248,24 @@ def county_measures():
     switch_lines = ",\n".join(f'        "{label}", [{wmeasure(k)}]' for k, label in PILLARS)
     out = []
     out.append(measure(
-        "Weight For Pillar",
+        "Weight For Category",
         "SWITCH (\n    SELECTEDVALUE ( county_factor_score[pillar] ),\n"
         + switch_lines + ",\n        0\n)",
         "0",
-        "Reads the slider for whichever pillar is in the current row. Used by My Score.",
+        "Reads the slider for whichever category is in the current row. Used by My Score.",
         hidden=True))
     out.append(measure(
-        "Pillar Score",
+        "Category Score",
         "AVERAGE ( county_factor_score[factor_score] )",
         "0",
-        "Average of the switched-on components that have a value, 0-100. Use with the pillar in the row or axis."))
+        "Average of the switched-on components that have a value, 0-100. Use with the category in the row or axis."))
     out.append(measure(
         "My Score",
         """
 VAR p =
     ADDCOLUMNS (
         ALLSELECTED ( county_factor_score[pillar] ),
-        "@w", [Weight For Pillar],
+        "@w", [Weight For Category],
         "@s", CALCULATE ( AVERAGE ( county_factor_score[factor_score] ) )
     )
 -- A pillar counts only if the county has at least one switched-on component with a
@@ -274,7 +274,7 @@ VAR numer = SUMX ( p, IF ( ISBLANK ( [@s] ), 0, [@w] * [@s] ) )
 VAR denom = SUMX ( p, IF ( ISBLANK ( [@s] ), 0, [@w] ) )
 RETURN
     DIVIDE ( numer, denom )
-""", "0", "Pillar scores weighted by the pillar sliders (0-100)."))
+""", "0", "Category scores weighted by the category sliders (0-100)."))
     out.append(measure(
         "My Rank",
         "IF ( ISBLANK ( [My Score] ), BLANK (),\n"
@@ -286,7 +286,7 @@ RETURN
 VAR p =
     ADDCOLUMNS (
         ALLSELECTED ( county_factor_score[pillar] ),
-        "@w", [Weight For Pillar],
+        "@w", [Weight For Category],
         "@s", CALCULATE ( AVERAGE ( county_factor_score[factor_score] ) )
     )
 RETURN
@@ -294,12 +294,12 @@ RETURN
         SUMX ( p, IF ( ISBLANK ( [@s] ), 0, [@w] ) ),
         SUMX ( p, [@w] )
     )
-""", "0%", "Share of your slider weight the county has data for. Below 100% means a whole pillar was missing and the score is based on the rest."))
+""", "0%", "Share of your slider weight the county has data for. Below 100% means a whole category was missing and the score is based on the rest."))
     for k, label in PILLARS:
         out.append(measure(
             f"{label} score",
             f'CALCULATE ( AVERAGE ( county_factor_score[factor_score] ), county_factor_score[pillar] = "{label}" )',
-            "0", f"{label} pillar score for the county (0-100)."))
+            "0", f"{label} category score for the county (0-100)."))
     out.append(measure(
         "Layer Score",
         "IF ( HASONEVALUE ( county_factor_score[factor_label] ),\n"
@@ -528,7 +528,7 @@ def filled_map(page, position, color_measure, tooltips, title=None):
                         [{"name": hid(name, "f"), "field": cat, "type": "Categorical"}])
 
 
-def table_visual(page, key, position, cols, sort, filters=None, title=None):
+def table_visual(page, key, position, cols, sort, filters=None, title=None, widths=None):
     """cols: list of (kind, entity, prop[, display name]). sort: (kind, entity, prop, dir)."""
     name = hid(page, "table", key)
     cols = [c if len(c) == 4 else (*c, None) for c in cols]
@@ -541,6 +541,14 @@ def table_visual(page, key, position, cols, sort, filters=None, title=None):
                            "isDefaultSort": True}},
         "objects": {"total": [{"properties": {"totals": lit("false")}}]},
         "drillFilterOtherVisuals": True}
+    if widths:
+        # Fixed column widths (px, keyed by "Entity.column") with text wrapping, so
+        # long notes wrap onto extra lines instead of being cut off.
+        vis["objects"]["values"] = [{"properties": {"wordWrap": lit("true")}}]
+        vis["objects"]["columnHeaders"] = [{"properties": {"wordWrap": lit("true")}}]
+        vis["objects"]["columnWidth"] = [
+            {"properties": {"value": lit(f"{w}D")}, "selector": {"metadata": ref}}
+            for ref, w in widths.items()]
     if title:
         titled(vis, title)
     return name, visual(name, position, vis, filters)
@@ -551,10 +559,10 @@ def pillar_bar(page, position):
     with nothing selected it shows the average across the counties in view."""
     name = hid(page, "pillarbar")
     cat = col("county_factor_score", "pillar")
-    val = mea("County", "Pillar Score")
+    val = mea("County", "Category Score")
     vis = {"visualType": "clusteredBarChart", "query": {
         "queryState": {"Category": {"projections": [proj(cat, "county_factor_score", "pillar", True)]},
-                       "Y": {"projections": [proj(val, "County", "Pillar Score")]}},
+                       "Y": {"projections": [proj(val, "County", "Category Score")]}},
         "sortDefinition": {"sort": [{"field": cat, "direction": "Ascending"}], "isDefaultSort": True}},
         "drillFilterOtherVisuals": False}
     # Clicking a county cross-highlights this chart: the full bar stays as the ERCOT
@@ -648,7 +656,7 @@ def write_report():
     tv["filterConfig"] = {"filters": [topn_filter(tname, 10)]}
     vs.append((tname, tv)); z += 1
     vs.append(textbox(P1, "howto", pos(410, 994, 1506, 82, z),
-                      "Set how much each umbrella matters (0 removes it) and untick any components you don't want. "
+                      "Set how much each category matters (0 removes it) and untick any components you don't want. "
                       "Click a county on the map or in the table to zoom in on it. "
                       "For the full breakdown of any county, go to County detail and pick it from the box.", "11pt")); z += 1
     write_page(P1, P1, "Score map", vs)
@@ -673,7 +681,7 @@ def write_report():
     vs.append(slicer(P3, "County", "county_name", pos(8, 4, 400, 80, 1005), "Dropdown", display="County",
                      preset=f"'{FIRST_COUNTY}'", single=True))
     vs.append(table_visual(P3, "factors", pos(8, 90, 700, 986, 1001), [
-        ("c", "county_factor_score", "pillar", "Pillar"), ("c", "county_factor_score", "factor_label", "Factor"),
+        ("c", "county_factor_score", "pillar", "Category"), ("c", "county_factor_score", "factor_label", "Factor"),
         ("c", "county_factor_score", "raw_value", "Value"),
         ("c", "county_factor_score", "unit", "Unit"), ("c", "county_factor_score", "factor_score", "Score")],
         ("c", "county_factor_score", "pillar", "Ascending"), title="Factor scores"))
@@ -694,13 +702,16 @@ def write_report():
 
     # ---- page 4: catalog
     vs = []
-    vs.append(slicer(P4, "metric", "pillar", pos(8, 4, 300, 400, 1000), "Basic", display="Pillar"))
+    vs.append(slicer(P4, "metric", "pillar", pos(8, 4, 300, 400, 1000), "Basic", display="Category"))
     vs.append(table_visual(P4, "catalog", pos(320, 4, 1596, 1072, 1001), [
-        ("c", "metric", "pillar", "Pillar"), ("c", "metric", "label", "Metric"), ("c", "metric", "metric_type", "Type"),
+        ("c", "metric", "pillar", "Category"), ("c", "metric", "label", "Metric"),
         ("c", "metric", "unit", "Unit"), ("c", "metric", "better_direction", "Better when"),
         ("c", "metric", "source_name", "Source"), ("c", "metric", "data_date", "Data as of"),
         ("c", "metric", "how_scored", "How it's scored"),
-        ("c", "metric", "caveat", "Notes")], ("c", "metric", "pillar", "Ascending")))
+        ("c", "metric", "caveat", "Notes")], ("c", "metric", "pillar", "Ascending"),
+        widths={"metric.pillar": 110, "metric.label": 190, "metric.unit": 130, "metric.better_direction": 70,
+                "metric.source_name": 250, "metric.data_date": 70, "metric.how_scored": 320,
+                "metric.caveat": 420}))
     write_page(P4, P4, "Catalog", vs)
 
 

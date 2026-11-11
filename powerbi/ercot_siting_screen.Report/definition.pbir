@@ -3,7 +3,7 @@
   "version": "4.0",
   "datasetReference": {
     "byPath": {
-      "path": "../ercot_siting_v2.SemanticModel"
+      "path": "../ercot_siting_screen.SemanticModel"
     }
   }
 }

@@ -27,18 +27,22 @@ GO
 
 CREATE OR ALTER VIEW rpt.pbi_metric AS
 SELECT metric_key, label, category,
+       -- "pillar" is the report's Category column.
        COALESCE(pillar, CASE WHEN metric_type = 'score' THEN 'Not in score' ELSE 'Background info' END) AS pillar,
-       metric_type, unit, better_direction, source_name, data_date, caveat,
+       metric_type,
+       CASE WHEN unit IN ('text', 'category') THEN '' ELSE unit END AS unit,
+       CASE WHEN better_direction IN ('higher', 'lower') THEN better_direction ELSE '' END AS better_direction,
+       source_name, data_date, caveat,
        -- Plain-English version of how rpt.county_factor_score turns the raw value into 0-100.
-       CASE WHEN metric_type <> 'score' THEN 'Not scored. Shown under Background info on County detail.'
-            WHEN pillar IS NULL THEN 'Not scored on purpose (see Notes). Shown under Background info on County detail.'
-            ELSE CONCAT('0-100 against the other ERCOT counties: the ',
+       CASE WHEN metric_type <> 'score' THEN 'Not scored. Shown in Background info on County detail.'
+            WHEN pillar IS NULL THEN 'Not scored (see Notes). Shown in Background info on County detail.'
+            ELSE CONCAT('Scored 0-100 against the other ERCOT counties: ',
                         CASE WHEN better_direction = 'lower' THEN 'lowest' ELSE 'highest' END,
-                        ' value gets 100 and the ',
+                        ' value = 100, ',
                         CASE WHEN better_direction = 'lower' THEN 'highest' ELSE 'lowest' END,
-                        ' gets 0.',
-                        CASE WHEN score_transform = 'log' THEN ' Log scale, so a few very large counties do not squash the rest.' ELSE '' END,
-                        CASE WHEN zero_is_missing = 1 THEN ' A 0 is left blank (nothing to measure).' ELSE '' END)
+                        ' = 0.',
+                        CASE WHEN score_transform = 'log' THEN ' Uses a log scale so a few very large counties don''t flatten the rest.' ELSE '' END,
+                        CASE WHEN zero_is_missing = 1 THEN ' Blank where the value is 0 (nothing to measure).' ELSE '' END)
        END AS how_scored
 FROM dim.metric;
 GO

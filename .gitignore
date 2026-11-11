@@ -23,7 +23,7 @@ Thumbs.db
 # Power BI project local state (per-machine cache and settings)
 **/.pbi/localSettings.json
 **/.pbi/cache.abf
-powerbi/ercot_siting.pbix
+powerbi/*.pbix
 
 # Snapshot files uploaded to GitHub releases, not tracked in git
 release/
