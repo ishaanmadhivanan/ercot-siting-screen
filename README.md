@@ -4,7 +4,7 @@
 2. Download `ercot_siting_screen.pbix` from the [latest release](https://github.com/ishaanmadhivanan/ercot-siting-screen/releases/latest), under **Assets**.
 3. Double-click the file to open it.
 4. If Power BI asks to refresh or connect to a database, click **Cancel**. The data is already saved in the file.
-5. - **PDF:** [all four pages](docs/ercot_siting_report.pdf) with default weights. (for MacOs)
+5. **PDF:** [all four pages](docs/ercot_siting_report.pdf) with default weights. (for MacOs)
 
 # ERCOT Gas Plant Siting Screen
 
