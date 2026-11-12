@@ -17,7 +17,7 @@ export function initSummary(ctx) {
     const pts = pieces.flatMap((f) => f.geometry.coordinates.flat(f.geometry.type === "Polygon" ? 1 : 2));
     if (pts.length) {
       const xs = pts.map((p) => p[0]), ys = pts.map((p) => p[1]);
-      map.fitBounds([[Math.min(...xs), Math.min(...ys)], [Math.max(...xs), Math.max(...ys)]], { padding: 90, maxZoom: 14.5, animate: false });
+      map.fitBounds([[Math.min(...xs), Math.min(...ys)], [Math.max(...xs), Math.max(...ys)]], { padding: 180, maxZoom: 13.2, animate: false });
     } else map.jumpTo({ center: [r.lon, r.lat], zoom: 12.5 });
     // County shading would muddy the picture, so it is switched off while the picture is taken.
     const shade = map.getPaintProperty("counties-fill", "fill-opacity");
