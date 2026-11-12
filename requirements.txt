@@ -1,3 +1,8 @@
 pandas>=2.0
 openpyxl>=3.1
 geopandas>=1.2
+# website build (scripts/web)
+pyogrio>=0.9
+shapely>=2.0
+pyproj>=3.6
+tippecanoe>=2.70
