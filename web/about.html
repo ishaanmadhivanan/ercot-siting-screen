@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>About the data | ERCOT gas plant siting map</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%2317212b'/%3E%3Cpath d='M2 11h12' stroke='%23e07b2c' stroke-width='2'/%3E%3Ccircle cx='8' cy='6' r='3' fill='%23ffd23f'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="doc">
+  <header class="bar">
+    <h1>ERCOT gas plant siting map</h1>
+    <p class="bar-note">About the data</p>
+    <nav><a href="index.html">Back to the map</a></nav>
+  </header>
+
+  <main>
+    <h1>About this map</h1>
+    <p class="lede">A free map for the first stage of finding a site for a gas-fired power plant in ERCOT, the grid that covers most of Texas. It puts the public data a developer checks first in one place.</p>
+
+    <h2>What it's for</h2>
+    <ul>
+      <li>Seeing where large gas pipelines, substations, power lines and existing plants are.</li>
+      <li>Seeing how many projects are already waiting to connect at a substation or in a county.</li>
+      <li>Finding parcels of 100 acres or more near the pipe and substations you need, and getting that list into a spreadsheet or your own GIS.</li>
+      <li>Ruling land out early: floodplain, ozone nonattainment, towns, airports.</li>
+    </ul>
+
+    <h2>What it can't tell you</h2>
+    <p>This is a screening tool. Public data can point to a promising area, but it can't confirm any of these:</p>
+    <ul>
+      <li><b>Grid capacity.</b> Whether a substation or line has room for a new plant comes from ERCOT's interconnection studies. ERCOT's detailed grid models are restricted.</li>
+      <li><b>Gas supply.</b> A big pipeline nearby means a plant could connect. It doesn't mean the pipeline has spare capacity or will sell it. Capacity and pressure aren't public for pipelines inside Texas.</li>
+      <li><b>Whether land is for sale,</b> who really controls it, or what it costs.</li>
+      <li><b>Permits, title, survey, wetlands, soils</b> or anything else found in the field.</li>
+    </ul>
+    <p>Distances are straight lines. Substations and power lines come from volunteer mapping (OpenStreetMap) and are incomplete in places.</p>
+
+    <h2>How to use it</h2>
+    <ul>
+      <li><b>Layers:</b> tick layers on and off, and click anything on the map for details. Each layer shows its legend, source and date when it is switched on. You can color the counties by any county number.</li>
+      <li><b>Parcel finder:</b> set your limits (size, distance to a gas line of 20 inches or more, distance to a substation, floodplain, owner type) and get a list. Click a row to go to the parcel, then open its site summary, which prints on one or two pages.</li>
+      <li><b>County score:</b> optional. Tick the county factors that matter to you and set how much each counts, and the map colors the counties by the result. "Use the gas plant starter" gives the same set-up as the Power BI version of this project.</li>
+      <li><b>Downloads:</b> the parcel list and the point layers download as CSV, KMZ (opens in Google Earth) or GeoJSON.</li>
+      <li><b>Aerial photo:</b> the switch at the bottom left swaps the street map for aerial photos. Every parcel, plant and substation also has links that open the spot in Google Maps and Google Earth.</li>
+    </ul>
+
+    <h2 id="layers">Layers and sources</h2>
+    <div class="table-wrap"><table id="layerTable"><thead><tr><th>Layer</th><th>Source and limits</th><th>Data as of</th></tr></thead><tbody></tbody></table></div>
+    <p>Base maps: the street map is from <a href="https://openfreemap.org/">OpenFreeMap</a> (OpenStreetMap contributors). The aerial photos are from the USDA National Agriculture Imagery Program, served by USGS The National Map; the year they were flown is shown beside the switch.</p>
+
+    <h2>How the parcel numbers are made</h2>
+    <ul>
+      <li><b>Which parcels.</b> Every parcel of 100 acres or more in the TxGIO county files: <span id="parcelCount"></span>. Acres are recalculated from each parcel's shape, because the area fields in the source files are unreliable. A shape repeated once per co-owner is counted once.</li>
+      <li><b>Distances.</b> Straight lines from the parcel's edge to the nearest gas transmission line of 20 inches or more, any gas transmission line, a substation (69 kV and up, 138 kV and up, 345 kV), a main road (motorway, trunk or primary road in OpenStreetMap), a city or town boundary, and a public-use airport.</li>
+      <li><b>Floodplain.</b> The share of the parcel inside FEMA's 1% annual chance flood zone, from a copy of FEMA's map simplified to about 20 meters. Where FEMA has no countywide digital map, the parcel shows "n/a", not zero.</li>
+      <li><b>Owner type.</b> Read from the owner name: Company, Individual, Trust or estate, Government, or Not listed. It is a best guess from the wording.</li>
+      <li><b>Privacy.</b> Names of individuals, trusts and estates are not published here, and no mailing or street addresses are used at all. Names are shown only for government bodies and registered businesses. To find an owner, look up the parcel ID at the county appraisal district.</li>
+      <li><b>Known gaps.</b> Eleven counties have parcel files that are incomplete or overlap (Harris County's file covers about 40% of the county). Donley County has no file.</li>
+      <li><b>Downloads are points.</b> A downloaded parcel is one point at the parcel's center with all its numbers. Outlines stay on the map.</li>
+    </ul>
+
+    <h2 id="queue">How queue projects are placed</h2>
+    <p>ERCOT's monthly report lists each project's connection point as text, such as "7043 Hays 345kV" or "Tap 345kV 3109 Stryker to 3100 Martin Lake", with no coordinates. Each project is matched to OpenStreetMap substations by name inside its county (then in the area around it), and checked against the voltage. A project that taps a line is placed halfway between the two ends.</p>
+    <div class="table-wrap"><table id="matchTable"><thead><tr><th>Match</th><th>Meaning</th><th>Projects</th><th>MW</th></tr></thead><tbody></tbody></table></div>
+    <p>A substation's queue count includes only the projects matched to it, so it is a floor. County totals include every active project. ERCOT's report leaves out projects that haven't asked for a full interconnection study yet.</p>
+
+    <h2 id="score">How the optional county score works</h2>
+    <p>Each factor is put on a 0 to 100 scale across the 195 ERCOT counties: the best county gets 100 and the worst gets 0. Factors where a few counties dwarf the rest (MW, miles, counts) use a log scale first. Where a county has nothing to measure, such as no gas plants, the factor is left blank instead of scored 0.</p>
+    <p>A category's score is the weighted average of the factors you ticked in it. The county score is the weighted average of the categories. You can flip the direction of any factor. The website's scores were checked against the project's database: all 2,965 factor scores agree to within 0.01 point.</p>
+
+    <h2 id="catalog">County numbers and where they come from</h2>
+    <div class="table-wrap"><table id="metricTable"><thead><tr><th>County number</th><th>Category</th><th>Unit</th><th>Better when</th><th>Source</th><th>Data as of</th><th>Notes</th></tr></thead><tbody></tbody></table></div>
+
+    <h2>Keeping the data current</h2>
+    <p>The map is a set of static files built by scripts in the <a href="https://github.com/ishaanmadhivanan/ercot-siting-screen">project repository</a>. To refresh it: download the new source files, run the SQL export, run the three scripts in <code>scripts/web/</code>, and commit. The README has the steps. This copy was built on <span id="built"></span>.</p>
+
+    <h2>Not in this version</h2>
+    <ul>
+      <li><b>Next: a fatal-flaw report.</b> Pick any site and check it against every public layer (floodplain, wetlands, protected species habitat, airports, nearby homes and schools, slope, pipe distance and size, nearby substations and their queue, ozone rating and offset cost), with a printable report that flags problems. This is the desktop check developers do before paying for field studies. Today's site summary is the start of it.</li>
+      <li><b>Later: a due-diligence tracker.</b> Saved candidate sites with a checklist (title, survey, environmental, interconnection, gas supply, permits), status, notes and uploaded studies. It needs logins and a database, so it can't be a static site.</li>
+      <li><b>More data:</b> power and gas prices (ERCOT nodal prices, Waha against Houston Ship Channel), announced data centers and other large loads, rail, road and bridge limits for heavy equipment, water availability, wetlands and habitat in the parcel filters, parcel outlines in the downloads, and automatic data refresh.</li>
+    </ul>
+
+    <h2>Credits</h2>
+    <p>Built by Ishaan Madhivanan with public data from EIA, ERCOT, EPA, TCEQ, the Railroad Commission of Texas, TxGIO, FEMA, the US Census Bureau, FAA, USFWS, USGS, USDA and OpenStreetMap contributors (ODbL). Map drawn with MapLibre GL JS and PMTiles. Nothing here is advice; check everything before you rely on it.</p>
+  </main>
+
+  <script type="module" src="js/about.js"></script>
+</body>
+</html>

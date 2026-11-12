@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ERCOT gas plant siting map</title>
+  <meta name="description" content="A free map of public data for a first look at gas power plant sites in ERCOT: pipelines, substations, the interconnection queue, air permits, floodplain and large parcels.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%2317212b'/%3E%3Cpath d='M2 11h12' stroke='%23e07b2c' stroke-width='2'/%3E%3Ccircle cx='8' cy='6' r='3' fill='%23ffd23f'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="vendor/maplibre-gl.css">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="bar">
+    <button id="panelToggle" class="bar-btn" aria-controls="panel" aria-expanded="true">Layers and tools</button>
+    <h1>ERCOT gas plant siting map</h1>
+    <p class="bar-note">Public data for a first look at sites. It screens; it does not replace due diligence.</p>
+    <nav>
+      <a href="about.html">About the data</a>
+      <a href="https://github.com/ishaanmadhivanan/ercot-siting-screen">GitHub</a>
+    </nav>
+  </header>
+
+  <main>
+    <aside id="panel" aria-label="Layers and tools">
+      <div class="tabs" role="tablist">
+        <button role="tab" aria-selected="true" data-tab="layers">Layers</button>
+        <button role="tab" aria-selected="false" data-tab="parcels">Parcel finder</button>
+        <button role="tab" aria-selected="false" data-tab="score">County score</button>
+      </div>
+
+      <section id="tab-layers" class="tab-body">
+        <div id="layerList"></div>
+        <div class="block">
+          <h3>Download what's on the map</h3>
+          <p class="hint">Points from the switched-on layers (plants, substations, queue projects, airports, LNG) inside the current map view.</p>
+          <div class="btn-row">
+            <button class="btn" data-export-points="csv">CSV</button>
+            <button class="btn" data-export-points="kmz">KMZ</button>
+            <button class="btn" data-export-points="geojson">GeoJSON</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="tab-parcels" class="tab-body" hidden>
+        <p class="hint">Parcels of 100 acres or more, from county appraisal records (TxGIO, 2025). Set what you need; the map and the list update together.</p>
+        <form id="parcelForm" class="form">
+          <label>Smallest parcel, acres
+            <input type="number" name="minAc" min="100" step="50" value="100">
+          </label>
+          <label>Within this many miles of a gas line 20 in or larger
+            <input type="number" name="maxPipe" min="0" step="0.5" placeholder="any distance">
+          </label>
+          <div class="pair">
+            <label>Within this many miles of a substation
+              <input type="number" name="maxSub" min="0" step="0.5" placeholder="any distance">
+            </label>
+            <label>Substation voltage
+              <select name="subKv">
+                <option value="69">69 kV and up</option>
+                <option value="138" selected>138 kV and up</option>
+                <option value="345">345 kV</option>
+              </select>
+            </label>
+          </div>
+          <label>At least this many miles from a city or town
+            <input type="number" name="minPlace" min="0" step="0.5" placeholder="no minimum">
+          </label>
+          <label>Floodplain (FEMA 1% annual chance)
+            <select name="flood">
+              <option value="any">Any</option>
+              <option value="0">None of the parcel in the floodplain</option>
+              <option value="10">10% of the parcel or less</option>
+              <option value="25">25% of the parcel or less</option>
+            </select>
+          </label>
+          <label class="check"><input type="checkbox" name="floodUnknown"> Keep parcels in counties FEMA has not mapped</label>
+          <fieldset>
+            <legend>Owner type</legend>
+            <label class="check"><input type="checkbox" name="ot" value="C" checked> Company</label>
+            <label class="check"><input type="checkbox" name="ot" value="I" checked> Individual</label>
+            <label class="check"><input type="checkbox" name="ot" value="T" checked> Trust or estate</label>
+            <label class="check"><input type="checkbox" name="ot" value="G" checked> Government</label>
+            <label class="check"><input type="checkbox" name="ot" value="U" checked> Not listed</label>
+          </fieldset>
+          <label>List parcels in
+            <select name="area" id="parcelArea"><option value="view">The current map view</option></select>
+          </label>
+          <div class="btn-row">
+            <button type="button" class="btn" id="parcelReset">Clear filters</button>
+          </div>
+        </form>
+        <div id="parcelStatus" class="status" aria-live="polite"></div>
+        <div class="btn-row" id="parcelExport" hidden>
+          <span class="hint">Download the list:</span>
+          <button class="btn" data-export-parcels="csv">CSV</button>
+          <button class="btn" data-export-parcels="kmz">KMZ</button>
+          <button class="btn" data-export-parcels="geojson">GeoJSON</button>
+        </div>
+        <div id="parcelTableWrap" class="table-wrap"></div>
+      </section>
+
+      <section id="tab-score" class="tab-body" hidden>
+        <p class="hint">Build your own county score. Tick the factors you care about, set how much each one counts, and the counties are colored by the result. Nothing is scored until you tick something.</p>
+        <div class="btn-row">
+          <button class="btn" id="scorePreset">Use the gas plant starter</button>
+          <button class="btn" id="scoreClear">Clear</button>
+        </div>
+        <div id="scoreFactors"></div>
+        <div id="scoreResult"></div>
+        <details class="how">
+          <summary>How the score is worked out</summary>
+          <p>Each factor is put on a 0 to 100 scale across the 195 ERCOT counties: the best county gets 100 and the worst gets 0. Factors with a few very large values (MW, miles, counts) use a log scale so those counties don't flatten the rest. Where a county has nothing to measure, the factor is left blank and skipped.</p>
+          <p>A category's score is the weighted average of its ticked factors. The county score is the weighted average of the categories.</p>
+        </details>
+      </section>
+    </aside>
+
+    <div id="mapWrap">
+      <div id="map"></div>
+      <div id="basemap" role="group" aria-label="Base map">
+        <button data-base="street" aria-pressed="true">Street map</button>
+        <button data-base="aerial" aria-pressed="false">Aerial photo</button>
+        <span id="aerialNote" hidden></span>
+      </div>
+      <div id="zoomHint" hidden></div>
+    </div>
+
+    <aside id="detail" aria-label="Details" hidden>
+      <button id="detailClose" class="close" aria-label="Close details">Close</button>
+      <div id="detailBody"></div>
+    </aside>
+  </main>
+
+  <div id="summary" hidden>
+    <div class="summary-tools">
+      <button class="btn primary" id="summaryPrint">Print or save as PDF</button>
+      <button class="btn" id="summaryClose">Back to the map</button>
+    </div>
+    <article id="summaryBody"></article>
+  </div>
+
+  <script src="vendor/maplibre-gl.js"></script>
+  <script src="vendor/pmtiles.js"></script>
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
